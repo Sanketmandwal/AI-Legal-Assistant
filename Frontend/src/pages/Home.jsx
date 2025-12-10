@@ -1,6 +1,8 @@
 import React from "react";
+import { useNavigate } from "react-router-dom";
 
 const Home = () => {
+  const navigate = useNavigate()
   return (
     <div className="bg-primary min-h-screen w-full">
       {/* Hero Section */}
@@ -8,12 +10,6 @@ const Home = () => {
         <div className="w-full px-4 sm:px-8 lg:px-16 py-12 lg:py-20 grid gap-10 lg:grid-cols-2 items-center">
           {/* Left: Content */}
           <div className="w-full space-y-6 animate-in">
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[color-mix(in_srgb,var(--color-brand-100)_70%,white)] border border-[color-mix(in_srgb,var(--color-brand-700)_10%,transparent)]">
-              <span className="badge-accent text-xs">New</span>
-              <span className="text-xs text-muted">
-                Meet <span className="text-brand font-semibold">Lecxi</span> — your AI legal co-pilot
-              </span>
-            </div>
             <h1 className="text-3xl sm:text-4xl lg:text-[2.6rem] leading-tight text-neutral-text">
               File FIRs <span className="text-brand">confidently</span> with
               AI-guided legal assistance.
@@ -25,7 +21,7 @@ const Home = () => {
             </p>
 
             <div className="flex flex-wrap gap-3 pt-2">
-              <button className="btn-primary">
+              <button className="btn-primary" onClick={() => navigate('/register')}>
                 Get Started — It’s Free
               </button>
               <button className="btn-secondary">
@@ -281,7 +277,7 @@ const Home = () => {
               </p>
             </div>
             <div className="flex flex-wrap gap-3">
-              <button className="btn-primary bg-surface text-brand hover:bg-primary">
+              <button className="btn-primary bg-surface text-brand hover:bg-primary" onClick={() =>  navigate('/register')}>
                 Create your account
               </button>
               <button className="btn-outline border-white text-white hover:bg-[rgba(255,255,255,0.1)]">

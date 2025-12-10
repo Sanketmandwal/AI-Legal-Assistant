@@ -12,14 +12,36 @@ export const authService = {
   },
   
   // ✅ Login user
+  // login: async (credentials) => {
+  //   try {
+  //     const response = await API.post('/auth/login', credentials);
+  //     return response.data;
+  //   } catch (error) {
+  //     throw error.response?.data?.message || 'Login failed. Please check your credentials.';
+  //   }
+  // },
   login: async (credentials) => {
-    try {
-      const response = await API.post('/auth/login', credentials);
-      return response.data;
-    } catch (error) {
-      throw error.response?.data?.message || 'Login failed. Please check your credentials.';
-    }
-  },
+  // Simulate API delay
+  await new Promise(resolve => setTimeout(resolve, 1500));
+  
+  // Mock validation
+  if (credentials.email === 'test@example.com' && credentials.password === 'password123') {
+    return {
+      success: true,
+      token: 'mock_token_' + Date.now(),
+      user: {
+        id: 'mock_id_123',
+        name: 'Test User',
+        email: credentials.email,
+        phone: '9876543210',
+        role: 'citizen'
+      }
+    };
+  } else {
+    throw 'Invalid email or password';
+  }
+},
+
   
   // Get current user
   getCurrentUser: () => {

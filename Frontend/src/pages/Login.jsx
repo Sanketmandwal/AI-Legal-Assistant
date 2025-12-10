@@ -6,6 +6,7 @@ import {
   Mail, Lock, Eye, EyeOff, 
   CheckCircle, AlertCircle, Scale, LogIn 
 } from 'lucide-react';
+import { getDashboardRoute } from '../utils/helper';
 
 const Login = () => {
   const navigate = useNavigate();
@@ -78,7 +79,7 @@ const Login = () => {
       setSuccess(true);
       
       // Role-based redirect
-      const redirectPath = '/dashboard';
+      const redirectPath = getDashboardRoute(result.data.user.role);
       
       // Redirect after 1.5 seconds
       setTimeout(() => {

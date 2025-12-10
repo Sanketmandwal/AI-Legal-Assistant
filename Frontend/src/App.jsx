@@ -6,7 +6,7 @@ import Layout from './components/layout/Layout';
 import Home from './pages/Home';
 import Login from './pages/Login';
 import Register from './pages/Register';
-// import Dashboard from './pages/Dashboard';
+import CitizenDashboard from './pages/dashboards/citizendashboard';
 // import FIRForm from './pages/FIRForm';
 // import FIRList from './pages/FIRList';
 // import Lawyers from './pages/Lawyers';
@@ -48,11 +48,11 @@ function App() {
       <Routes>
         {/* Routes with Layout (Navbar + Footer) */}
         <Route element={<Layout />}>
-          
+
           {/* Public Routes */}
           <Route path="/" element={<Home />} />
           {/* <Route path="/about" element={<About />} /> */}
-          
+
           {/* Auth Routes (redirect to dashboard if logged in) */}
           <Route
             path="/login"
@@ -71,15 +71,18 @@ function App() {
             }
           />
 
-          {/* Protected Routes - All Roles */}
-          {/* <Route
-            path="/dashboard"
+          <Route
+            path="/dashboard/citizen"
             element={
-              <ProtectedRoute>
-                <Dashboard />
+              <ProtectedRoute allowedRoles={['citizen']}>
+                <CitizenDashboard />
               </ProtectedRoute>
             }
           />
+
+
+          {/* Protected Routes - All Roles */}
+          {/* 
           <Route
             path="/profile"
             element={

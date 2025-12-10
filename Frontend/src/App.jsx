@@ -4,8 +4,8 @@ import Layout from './components/layout/Layout';
 
 // Import your pages (create these files later)
 import Home from './pages/Home';
-// import Login from './pages/Login';
-// import Register from './pages/Register';
+import Login from './pages/Login';
+import Register from './pages/Register';
 // import Dashboard from './pages/Dashboard';
 // import FIRForm from './pages/FIRForm';
 // import FIRList from './pages/FIRList';
@@ -54,7 +54,7 @@ function App() {
           {/* <Route path="/about" element={<About />} /> */}
           
           {/* Auth Routes (redirect to dashboard if logged in) */}
-          {/* <Route
+          <Route
             path="/login"
             element={
               <PublicRoute>
@@ -69,7 +69,7 @@ function App() {
                 <Register />
               </PublicRoute>
             }
-          /> */}
+          />
 
           {/* Protected Routes - All Roles */}
           {/* <Route

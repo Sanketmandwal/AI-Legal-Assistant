@@ -7,6 +7,8 @@ import Home from './pages/Home';
 import Login from './pages/Login';
 import Register from './pages/Register';
 import CitizenDashboard from './pages/dashboards/citizendashboard';
+import LawyerDashboard from './pages/dashboards/LawyerDashboard';
+import PoliceDashboard from './pages/dashboards/PoliceDashboard';
 // import FIRForm from './pages/FIRForm';
 // import FIRList from './pages/FIRList';
 // import Lawyers from './pages/Lawyers';
@@ -79,6 +81,25 @@ function App() {
               </ProtectedRoute>
             }
           />
+
+          <Route
+            path="/dashboard/lawyer"
+            element={
+              <ProtectedRoute allowedRoles={['lawyer']}>
+                <LawyerDashboard />
+              </ProtectedRoute>
+            }
+          />
+
+          <Route
+            path="/dashboard/police"
+            element={
+              <ProtectedRoute allowedRoles={['police']}>
+                <PoliceDashboard />
+              </ProtectedRoute>
+            }
+          />
+
 
 
           {/* Protected Routes - All Roles */}

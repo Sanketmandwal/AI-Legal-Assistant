@@ -1,104 +1,66 @@
-import { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import { useDispatch, useSelector } from 'react-redux';
-import { registerUser } from '../store/actions/authActions';
-import { 
-  User, Mail, Phone, Lock, Eye, EyeOff, 
-  CheckCircle, AlertCircle, Scale, Sparkles 
-} from 'lucide-react';
+import React, { useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import { useDispatch, useSelector } from "react-redux";
+import {
+  User, Mail, Phone, Lock, Eye, EyeOff,
+  CheckCircle, AlertCircle, Scale,
+  Shield, ArrowRight
+} from "lucide-react";
+import { registerUser } from "../store/actions/authActions";
 
 const Register = () => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
+
+  // Get Redux state
   const { loading, error } = useSelector((state) => state.auth);
 
   const [formData, setFormData] = useState({
-    name: '',
-    email: '',
-    phone: '',
-    password: '',
-    confirmPassword: '',
-    role: 'citizen',
+    name: "",
+    email: "",
+    phone: "",
+    password: "",
+    confirmPassword: "",
+    role: "user",
     acceptTerms: false,
   });
-
   const [errors, setErrors] = useState({});
+  const [success, setSuccess] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-  const [success, setSuccess] = useState(false);
 
-  // Handle input changes
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
-    setFormData({
-      ...formData,
-      [name]: type === 'checkbox' ? checked : value,
-    });
-    // Clear error for this field
+    setFormData((prev) => ({ ...prev, [name]: type === "checkbox" ? checked : value }));
+    // Clear field error
     if (errors[name]) {
-      setErrors({ ...errors, [name]: '' });
+      setErrors((prev) => ({ ...prev, [name]: "" }));
     }
   };
 
-  // Validate form
-  const validateForm = () => {
-    const newErrors = {};
-
-    // Name validation
-    if (!formData.name.trim()) {
-      newErrors.name = 'Name is required';
-    } else if (formData.name.trim().length < 3) {
-      newErrors.name = 'Name must be at least 3 characters';
-    }
-
-    // Email validation
+  const validate = () => {
+    const newErr = {};
+    if (!formData.name.trim() || formData.name.trim().length < 3)
+      newErr.name = "Name must be at least 3 characters";
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!formData.email) {
-      newErrors.email = 'Email is required';
-    } else if (!emailRegex.test(formData.email)) {
-      newErrors.email = 'Please enter a valid email';
-    }
-
-    // Phone validation
-    const phoneRegex = /^[6-9]\d{9}$/;
-    if (!formData.phone) {
-      newErrors.phone = 'Phone number is required';
-    } else if (!phoneRegex.test(formData.phone)) {
-      newErrors.phone = 'Please enter a valid 10-digit phone number';
-    }
-
-    // Password validation
-    if (!formData.password) {
-      newErrors.password = 'Password is required';
-    } else if (formData.password.length < 6) {
-      newErrors.password = 'Password must be at least 6 characters';
-    }
-
-    // Confirm password validation
-    if (!formData.confirmPassword) {
-      newErrors.confirmPassword = 'Please confirm your password';
-    } else if (formData.password !== formData.confirmPassword) {
-      newErrors.confirmPassword = 'Passwords do not match';
-    }
-
-    // Terms acceptance
-    if (!formData.acceptTerms) {
-      newErrors.acceptTerms = 'You must accept the terms and conditions';
-    }
-
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
+    if (!emailRegex.test(formData.email))
+      newErr.email = "Please enter a valid email";
+    if (!/^[6-9]\d{9}$/.test(formData.phone))
+      newErr.phone = "Please enter a valid 10-digit phone number";
+    if (formData.password.length < 6)
+      newErr.password = "Password must be at least 6 characters";
+    if (formData.password !== formData.confirmPassword)
+      newErr.confirmPassword = "Passwords do not match";
+    if (!formData.acceptTerms)
+      newErr.acceptTerms = "You must accept the terms and conditions";
+    setErrors(newErr);
+    return Object.keys(newErr).length === 0;
   };
 
-  // Handle form submission
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
-    if (!validateForm()) {
-      return;
-    }
+    if (!validate()) return;
 
-    // Prepare data for API (remove confirmPassword and acceptTerms)
     const userData = {
       name: formData.name.trim(),
       email: formData.email.toLowerCase().trim(),
@@ -109,28 +71,50 @@ const Register = () => {
 
     const result = await dispatch(registerUser(userData));
 
+
     if (result.success) {
+
       setSuccess(true);
-      // Redirect to dashboard after 2 seconds
+
       setTimeout(() => {
-        navigate('/dashboard');
-      }, 2000);
+        if (formData.role === "lawyer") {
+          console.log("🔀 Navigating to /complete-lawyer");
+          navigate("/complete-lawyer");
+        } else if (formData.role === "police") {
+          console.log("🔀 Navigating to /complete-police");
+          navigate("/complete-police");
+        } else {
+          console.log("🔀 Navigating to /dashboard/citizen");
+          navigate("/dashboard/citizen");
+        }
+      }, 1500);
+    } else {
+      console.error("❌ Registration failed:", result.error);
     }
   };
 
+
   return (
     <div className="min-h-screen bg-primary flex items-center justify-center px-4 py-12 relative overflow-hidden">
-      
+
       {/* Background Decorations */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         <div className="absolute top-20 -right-20 w-72 h-72 bg-brand-500/20 rounded-full blur-3xl animate-float"></div>
         <div className="absolute -bottom-20 -left-20 w-80 h-80 bg-accent/20 rounded-full blur-3xl animate-float delay-1000"></div>
+        <div className="absolute top-1/2 left-1/2 w-60 h-60 bg-purple-500/10 rounded-full blur-3xl animate-float delay-700"></div>
       </div>
 
       <div className="relative max-w-md w-full">
-        
+
         {/* Header */}
         <div className="text-center mb-8 animate-in">
+          <Link to="/" className="inline-flex items-center gap-2 mb-6 group">
+            <div className="w-12 h-12 bg-gradient-to-br from-brand-700 to-brand-500 rounded-xl flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform">
+              <Scale className="w-7 h-7 text-white" />
+            </div>
+            <span className="text-2xl font-bold text-brand-900 font-serif">LexiAI</span>
+          </Link>
+
           <h1 className="text-brand-900 mb-2">Create Your Account</h1>
           <p className="text-muted">Join thousands using AI-powered legal assistance</p>
         </div>
@@ -141,12 +125,12 @@ const Register = () => {
             <CheckCircle className="w-5 h-5 text-green-600 flex-shrink-0" />
             <div>
               <p className="text-sm font-medium text-green-800">Registration Successful!</p>
-              <p className="text-xs text-green-600">Redirecting to dashboard...</p>
+              <p className="text-xs text-green-600">Redirecting to your dashboard...</p>
             </div>
           </div>
         )}
 
-        {/* Error Message */}
+        {/* Error Message from Redux */}
         {error && (
           <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-xl flex items-center gap-3 animate-in">
             <AlertCircle className="w-5 h-5 text-red-600 flex-shrink-0" />
@@ -157,7 +141,7 @@ const Register = () => {
         {/* Registration Form */}
         <div className="card animate-in delay-100">
           <form onSubmit={handleSubmit} className="space-y-5">
-            
+
             {/* Name Input */}
             <div>
               <label className="block text-sm font-medium text-neutral-text mb-2">
@@ -294,30 +278,28 @@ const Register = () => {
                 I am a <span className="text-danger">*</span>
               </label>
               <div className="grid grid-cols-3 gap-3">
-                <label className={`relative flex flex-col items-center p-4 border-2 rounded-xl cursor-pointer transition-all ${
-                  formData.role === 'citizen' 
-                    ? 'border-brand-700 bg-brand-50' 
+                <label className={`relative flex flex-col items-center p-4 border-2 rounded-xl cursor-pointer transition-all ${formData.role === 'user'
+                    ? 'border-brand-700 bg-brand-50'
                     : 'border-neutral-border hover:border-brand-300'
-                }`}>
+                  }`}>
                   <input
                     type="radio"
                     name="role"
-                    value="citizen"
-                    checked={formData.role === 'citizen'}
+                    value="user"
+                    checked={formData.role === 'user'}
                     onChange={handleChange}
                     className="sr-only"
                   />
-                  <User className={`w-6 h-6 mb-2 ${formData.role === 'citizen' ? 'text-brand-700' : 'text-muted'}`} />
-                  <span className={`text-sm font-medium ${formData.role === 'citizen' ? 'text-brand-700' : 'text-neutral-text'}`}>
+                  <User className={`w-6 h-6 mb-2 ${formData.role === 'user' ? 'text-brand-700' : 'text-muted'}`} />
+                  <span className={`text-sm font-medium ${formData.role === 'user' ? 'text-brand-700' : 'text-neutral-text'}`}>
                     Citizen
                   </span>
                 </label>
 
-                <label className={`relative flex flex-col items-center p-4 border-2 rounded-xl cursor-pointer transition-all ${
-                  formData.role === 'lawyer' 
-                    ? 'border-brand-700 bg-brand-50' 
+                <label className={`relative flex flex-col items-center p-4 border-2 rounded-xl cursor-pointer transition-all ${formData.role === 'lawyer'
+                    ? 'border-brand-700 bg-brand-50'
                     : 'border-neutral-border hover:border-brand-300'
-                }`}>
+                  }`}>
                   <input
                     type="radio"
                     name="role"
@@ -332,11 +314,10 @@ const Register = () => {
                   </span>
                 </label>
 
-                <label className={`relative flex flex-col items-center p-4 border-2 rounded-xl cursor-pointer transition-all ${
-                  formData.role === 'police' 
-                    ? 'border-brand-700 bg-brand-50' 
+                <label className={`relative flex flex-col items-center p-4 border-2 rounded-xl cursor-pointer transition-all ${formData.role === 'police'
+                    ? 'border-brand-700 bg-brand-50'
                     : 'border-neutral-border hover:border-brand-300'
-                }`}>
+                  }`}>
                   <input
                     type="radio"
                     name="role"
@@ -345,7 +326,7 @@ const Register = () => {
                     onChange={handleChange}
                     className="sr-only"
                   />
-                  <Sparkles className={`w-6 h-6 mb-2 ${formData.role === 'police' ? 'text-brand-700' : 'text-muted'}`} />
+                  <Shield className={`w-6 h-6 mb-2 ${formData.role === 'police' ? 'text-brand-700' : 'text-muted'}`} />
                   <span className={`text-sm font-medium ${formData.role === 'police' ? 'text-brand-700' : 'text-neutral-text'}`}>
                     Police
                   </span>
@@ -387,7 +368,7 @@ const Register = () => {
             <button
               type="submit"
               disabled={loading}
-              className="btn-primary w-full py-3 text-base disabled:opacity-50 disabled:cursor-not-allowed"
+              className="btn-primary w-full py-3 text-base disabled:opacity-50 disabled:cursor-not-allowed group"
             >
               {loading ? (
                 <span className="flex items-center justify-center gap-2">
@@ -395,7 +376,10 @@ const Register = () => {
                   Creating Account...
                 </span>
               ) : (
-                'Create Account'
+                <span className="flex items-center justify-center gap-2">
+                  Create Account
+                  <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+                </span>
               )}
             </button>
           </form>
@@ -409,6 +393,14 @@ const Register = () => {
               </Link>
             </p>
           </div>
+        </div>
+
+        {/* Security Badge */}
+        <div className="mt-6 text-center animate-in delay-200">
+          <p className="text-xs text-muted flex items-center justify-center gap-2">
+            <Lock className="w-4 h-4 text-accent" />
+            Your data is secure and encrypted
+          </p>
         </div>
       </div>
     </div>

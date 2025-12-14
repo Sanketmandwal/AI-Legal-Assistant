@@ -67,21 +67,19 @@ const Login = () => {
       return;
     }
 
-    // Prepare credentials for API
     const credentials = {
       email: formData.email.toLowerCase().trim(),
       password: formData.password,
     };
 
     const result = await dispatch(loginUser(credentials));
-
+    console.log("Login result:", result);
     if (result.success) {
       setSuccess(true);
       
       // Role-based redirect
-      const redirectPath = getDashboardRoute(result.data.user.role);
+      const redirectPath = getDashboardRoute(result.data.role);
       
-      // Redirect after 1.5 seconds
       setTimeout(() => {
         navigate(redirectPath);
       }, 1500);

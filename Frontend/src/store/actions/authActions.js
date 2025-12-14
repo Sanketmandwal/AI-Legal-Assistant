@@ -1,12 +1,16 @@
-import { 
-  registerStart, 
-  registerSuccess, 
+import {
+  registerStart,
+  registerSuccess,
   registerFailure,
-    loginStart,
-    loginSuccess,
-    loginFailure,
+  loginStart,
+  loginSuccess,
+  loginFailure,
+  getProfile,
+  updateUserProfile,
 } from '../slices/authSlice';
 import { authService } from '../../services/authService';
+import api from '../../apis/api';
+
 
 // Register Action
 export const registerUser = (userData) => async (dispatch) => {
@@ -32,3 +36,15 @@ export const loginUser = (credentials) => async (dispatch) => {
     return { success: false, error };
   }
 };
+
+export const getuser = () =>async (dispatch) => {
+  try {
+    const data = await authService.getProfile();
+    console.log("Fetched user data from database:", data);
+    dispatch(getProfile(data.user));
+    return data.user;
+  } catch (error) {
+    console.error("Error fetching user from localStorage:", error);
+    return null;
+  }
+}

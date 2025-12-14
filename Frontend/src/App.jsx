@@ -1,51 +1,69 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
-import { useSelector } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import Layout from './components/layout/Layout';
 
-// Import your pages (create these files later)
 import Home from './pages/Home';
 import Login from './pages/Login';
 import Register from './pages/Register';
-import CitizenDashboard from './pages/dashboards/citizendashboard';
+import CitizenDashboard from './pages/dashboards/CitizenDashboard';
 import LawyerDashboard from './pages/dashboards/LawyerDashboard';
 import PoliceDashboard from './pages/dashboards/PoliceDashboard';
-// import FIRForm from './pages/FIRForm';
-// import FIRList from './pages/FIRList';
-// import Lawyers from './pages/Lawyers';
-// import Chatbot from './pages/Chatbot';
-// import Profile from './pages/Profile';
-// import Settings from './pages/Settings';
-// import About from './pages/About';
-// import NotFound from './pages/NotFound';
+import CompleteLawyer from './pages/CompleteLawyer';
+import CompletePolice from './pages/CompletePolice';
+import { getDashboardRoute } from './utils/helper';
+import { useEffect } from 'react';
+import { getuser } from './store/actions/authActions';
+
 
 // Protected Route Component
 const ProtectedRoute = ({ children, allowedRoles = [] }) => {
   const { isAuthenticated, user } = useSelector((state) => state.auth);
+  console.log("ProtectedRoute - isAuthenticated:", isAuthenticated, "user:", user);
 
   if (!isAuthenticated) {
     return <Navigate to="/login" replace />;
   }
 
   if (allowedRoles.length > 0 && !allowedRoles.includes(user?.role)) {
-    return <Navigate to="/dashboard" replace />;
+    const appropriateDashboard = getDashboardRoute(user?.role);
+    // Redirect to appropriate dashboard based on role
+    return <Navigate to={appropriateDashboard} replace />;
   }
 
   return children;
 };
 
-// Public Route Component (redirect if logged in)
-const PublicRoute = ({ children }) => {
-  const { isAuthenticated, user } = useSelector((state) => state.auth);
 
-  if (isAuthenticated) {
-    return <Navigate to="/dashboard" replace />;
+
+// Dashboard Redirect Component (based on role)
+const DashboardRedirect = () => {
+  const { user } = useSelector((state) => state.auth);
+
+  // Redirect based on role
+  switch (user?.role) {
+    case 'user':
+    case 'citizen':
+      return <Navigate to="/dashboard/citizen" replace />;
+    case 'lawyer':
+      return <Navigate to="/dashboard/lawyer" replace />;
+    case 'police':
+      return <Navigate to="/dashboard/police" replace />;
+    default:
+      return <Navigate to="/" replace />;
   }
-
-  return children;
 };
 
 function App() {
+
+  const dispatch = useDispatch();
+  useEffect(() => {
+
+  dispatch(getuser());
+  }, []);
+
   return (
+
+    
     <BrowserRouter>
       <Routes>
         {/* Routes with Layout (Navbar + Footer) */}
@@ -53,30 +71,27 @@ function App() {
 
           {/* Public Routes */}
           <Route path="/" element={<Home />} />
-          {/* <Route path="/about" element={<About />} /> */}
 
-          {/* Auth Routes (redirect to dashboard if logged in) */}
+          {/* Auth Routes */}
           <Route
             path="/login"
             element={
-              <PublicRoute>
-                <Login />
-              </PublicRoute>
+              <Login />
             }
           />
           <Route
             path="/register"
             element={
-              <PublicRoute>
-                <Register />
-              </PublicRoute>
+              <Register />
             }
           />
 
+
+          {/* Role-specific Dashboard Routes */}
           <Route
             path="/dashboard/citizen"
             element={
-              <ProtectedRoute allowedRoles={['citizen']}>
+              <ProtectedRoute allowedRoles={['user', 'citizen']}>
                 <CitizenDashboard />
               </ProtectedRoute>
             }
@@ -100,82 +115,29 @@ function App() {
             }
           />
 
-
-
-          {/* Protected Routes - All Roles */}
-          {/* 
-          <Route
-            path="/profile"
-            element={
-              <ProtectedRoute>
-                <Profile />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/settings"
-            element={
-              <ProtectedRoute>
-                <Settings />
-              </ProtectedRoute>
-            }
-          /> */}
-
-          {/* Protected Routes - Citizens Only */}
-          {/* <Route
-            path="/fir/new"
-            element={
-              <ProtectedRoute allowedRoles={['citizen']}>
-                <FIRForm />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/fir/list"
-            element={
-              <ProtectedRoute allowedRoles={['citizen']}>
-                <FIRList />
-              </ProtectedRoute>
-            }
-          /> */}
-          {/* <Route
-            path="/lawyers"
-            element={
-              <ProtectedRoute allowedRoles={['citizen']}>
-                <Lawyers />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/chatbot"
-            element={
-              <ProtectedRoute allowedRoles={['citizen']}>
-                <Chatbot />
-              </ProtectedRoute>
-            }
-          /> */}
-
-          {/* Protected Routes - Police Only */}
-          {/* <Route
-            path="/fir/pending"
-            element={
-              <ProtectedRoute allowedRoles={['police']}>
-                <FIRList />
-              </ProtectedRoute>
-            }
-          /> */}
-          {/* <Route
-            path="/fir/all"
-            element={
-              <ProtectedRoute allowedRoles={['police']}>
-                <FIRList />
-              </ProtectedRoute>
-            }
-          /> */}
-
-          {/* 404 Page */}
-          {/* <Route path="*" element={<NotFound />} /> */}
         </Route>
+
+        {/* Profile Completion Routes - OUTSIDE Layout, using AuthRequired */}
+        <Route
+          path="/complete-lawyer"
+          element={
+            <ProtectedRoute allowedRoles={['lawyer']}>
+              <CompleteLawyer />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/complete-police"
+          element={
+            <ProtectedRoute allowedRoles={['police']}>
+              <CompletePolice />
+            </ProtectedRoute>
+          }
+        />
+
+        {/* 404 Catch-all */}
+        <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </BrowserRouter>
   );

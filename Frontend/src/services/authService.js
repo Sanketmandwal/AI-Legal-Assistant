@@ -1,64 +1,52 @@
-import API from './api';
+import api from '../apis/api.js';
 
 export const authService = {
   // Register new user
   register: async (userData) => {
     try {
-      const response = await API.post('/auth/register', userData);
+      const response = await api.post('/auth/register', userData);
+      
+      // Store token in localStorage
+      if (response.data.token) {
+        localStorage.setItem('token', response.data.token);
+      }
+      
       return response.data;
     } catch (error) {
-      throw error.response?.data?.message || 'Registration failed';
+      const message = error.response?.data?.message || 'Registration failed';
+      throw message;
     }
   },
   
-  // ✅ Login user
+  // Login user
   login: async (credentials) => {
     try {
-      const response = await API.post('/auth/login', credentials);
+      const response = await api.post('/auth/login', credentials);
+      
+      // Store token in localStorage
+      if (response.data.token) {
+        localStorage.setItem('token', response.data.token);
+      }
+      
       return response.data;
     } catch (error) {
-      throw error.response?.data?.message || 'Login failed. Please check your credentials.';
+      const message = error.response?.data?.message || 'Login failed. Please check your credentials.';
+      throw message;
     }
   },
- 
-  
-  // Get current user
-  getCurrentUser: () => {
-    const user = localStorage.getItem('user');
-    return user ? JSON.parse(user) : null;
-  },
-  
+
   // Logout
   logout: () => {
     localStorage.removeItem('token');
-    localStorage.removeItem('user');
-  }
+  },
+
+  getProfile: async () => {
+    try {
+      const response = await api.get('/auth/me');
+      return response.data;
+    } catch (error) {
+      const message = error.response?.data?.message || 'Failed to fetch profile';
+      throw message;
+    }
+  },
 };
-
-
-// TEMPORARY - Remove when backend is ready
-// login: async (credentials) => {
-//   // Simulate API delay
-//   await new Promise(resolve => setTimeout(resolve, 1500));
-  
-//   // Mock validation
-//   if (credentials.email === 'test@example.com' && credentials.password === 'password123') {
-//     return {
-//       success: true,
-//       token: 'mock_token_' + Date.now(),
-//       user: {
-//         id: 'mock_id_123',
-//         name: 'Test User',
-//         email: credentials.email,
-//         phone: '9876543210',
-//         role: 'citizen'
-//       }
-//     };
-//   } else {
-//     throw 'Invalid email or password';
-//   }
-// },
-
-// Email: test@example.com
-
-// Password: password123

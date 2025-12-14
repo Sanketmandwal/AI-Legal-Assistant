@@ -1,11 +1,20 @@
 import { createSlice } from '@reduxjs/toolkit';
+import api from '../../apis/api';
+
+
+
+
+
+
+const getStoredToken = () => {
+  const token = localStorage.getItem('token');
+  return (token && token !== 'undefined' && token !== 'null') ? token : null;
+};
 
 const initialState = {
-  user: localStorage.getItem('user') 
-    ? JSON.parse(localStorage.getItem('user')) 
-    : null,
-  token: localStorage.getItem('token') || null,
-  isAuthenticated: !!localStorage.getItem('token'),
+  user: {} ,
+  token: getStoredToken(),
+  isAuthenticated: !!getStoredToken(),
   loading: false,
   error: null,
 };
@@ -26,7 +35,6 @@ const authSlice = createSlice({
       state.error = null;
       // Save to localStorage
       localStorage.setItem('token', action.payload.token);
-      localStorage.setItem('user', JSON.stringify(action.payload.user));
     },
     loginFailure: (state, action) => {
       state.loading = false;
@@ -39,7 +47,6 @@ const authSlice = createSlice({
       state.error = null;
       // Clear localStorage
       localStorage.removeItem('token');
-      localStorage.removeItem('user');
     },
     registerStart: (state) => {
       state.loading = true;
@@ -53,12 +60,17 @@ const authSlice = createSlice({
       state.error = null;
       // Save to localStorage
       localStorage.setItem('token', action.payload.token);
-      localStorage.setItem('user', JSON.stringify(action.payload.user));
     },
     registerFailure: (state, action) => {
       state.loading = false;
       state.error = action.payload;
     },
+    updateUserProfile: (state, action) => {
+      state.user = { ...state.user, ...action.payload };
+    },
+    getProfile: (state , action) =>{
+      state.user = action.payload;
+    }
   },
 });
 
@@ -70,6 +82,8 @@ export const {
   registerStart,
   registerSuccess,
   registerFailure,
+  updateUserProfile,
+  getProfile,
 } = authSlice.actions;
 
 export default authSlice.reducer;

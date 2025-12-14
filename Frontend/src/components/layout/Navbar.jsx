@@ -46,7 +46,7 @@ const Navbar = () => {
     switch (user?.role) {
       case 'citizen':
         return [
-          { name: 'Dashboard', path: '/dashboard' },
+          { name: 'Dashboard', path: '/dashboard/user' },
           { name: 'File FIR', path: '/fir/new', highlight: true },
           { name: 'My FIRs', path: '/fir/list' },
           { name: 'Find Lawyer', path: '/lawyers' },
@@ -55,7 +55,7 @@ const Navbar = () => {
       
       case 'lawyer':
         return [
-          { name: 'Dashboard', path: '/dashboard' },
+          { name: 'Dashboard', path: '/dashboard/lawyer' },
           { name: 'My Cases', path: '/cases' },
           { name: 'Clients', path: '/clients' },
           { name: 'Availability', path: '/availability' },
@@ -63,7 +63,7 @@ const Navbar = () => {
       
       case 'police':
         return [
-          { name: 'Dashboard', path: '/dashboard' },
+          { name: 'Dashboard', path: '/dashboard/police' },
           { name: 'Pending FIRs', path: '/fir/pending', badge: 5 },
           { name: 'All FIRs', path: '/fir/all' },
           { name: 'Reports', path: '/reports' },

@@ -2,8 +2,8 @@ import express from 'express'
 import cors from 'cors'
 import connectDB from './services/mongo.js'
 import dotenv from 'dotenv';
+import authRoutes from './routes/authRoutes.js'
 dotenv.config()
-import userrouter from './routes/authRoutes.js';
 
 const app = express();
 app.use(cors());
@@ -16,6 +16,7 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 
+
 app.get('/', (req, res) => {
     res.send('API is running....');
 })
@@ -26,7 +27,7 @@ app.cors = {
     allowedHeaders: ['Content-Type', 'Authorization'],
 };
 
-app.use('/api/auth', userrouter);
+app.use("/api/auth", authRoutes);
 
-// REMOVE THIS - Don't start app.listen() again
+
 app.listen(PORT, () => console.log("Server Started on port", PORT));

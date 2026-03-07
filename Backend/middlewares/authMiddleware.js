@@ -14,14 +14,14 @@ async function authMiddleware(req, res, next) {
 
     const token = authHeader.split(' ')[1];
 
-    console.log('authMiddleware - token received:', token);
+    // console.log('authMiddleware - token received:', token);
 
     let decoded;
     try {
       decoded = verifyToken(token);
     } catch (err) {
-      console.log('authMiddleware - token decoded:', decoded);
-      console.error('authMiddleware - token verification error:', err);
+      // console.log('authMiddleware - token decoded:', decoded);
+      // console.error('authMiddleware - token verification error:', err);
       return res.status(401).json({ success: false, message: 'Invalid or expired token' });
     }
 

@@ -29,7 +29,7 @@ export const register = async (req, res) => {
     }
 
     // Only allow specific roles from client
-    const allowedRoles = ["citizen", "lawyer", "police"];
+    const allowedRoles = ["citizen", "lawyer", "police" , ["admin"]];
     const finalRole = allowedRoles.includes(role) ? role : "citizen";
 
     const user = new User({

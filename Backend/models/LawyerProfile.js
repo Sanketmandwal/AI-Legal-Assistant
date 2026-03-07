@@ -33,11 +33,34 @@ const lawyerProfileSchema = new mongoose.Schema(
     feePerConsultation: Number,
 
     verified: { type: Boolean, default: false },
+    // Add these fields to your existing schema:
+    aadharNumber: {
+      type: String,
+      required: true,
+      unique: true,
+    },
+    aadharPublicId : {
+      type: String, // file path
+      required: true,
+    },
+    roleDocuments: [{
+      type: String, // bar council cert
+      required: true,
+    }],
+
+    // Update verificationStatus to match Police:
     verificationStatus: {
       type: String,
       enum: ['pending', 'approved', 'rejected'],
       default: 'pending',
     },
+    verifiedBy: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User", // admin
+    },
+    verifiedAt: Date,
+    rejectionReason: String,
+
   },
   {
     timestamps: true,

@@ -20,7 +20,6 @@ const userSchema = new mongoose.Schema(
     },
     phone: {
       type: String,
-      unique: true,
       sparse: true, // allow multiple nulls
     },
 
@@ -64,7 +63,7 @@ const userSchema = new mongoose.Schema(
 );
 
 userSchema.index({ email: 1 }, { unique: true });
-userSchema.index({ phone: 1 }, { unique: true, sparse: true });
+userSchema.index({ phone: 1 }, { sparse: true });
 userSchema.index({ role: 1 });
 
 // Hash password before save if modified
@@ -101,7 +100,7 @@ userSchema.statics.loginWithEmail = async function (email, password) {
   const isMatch = user.comparePassword(password);
   if (!isMatch) throw new Error("Incorrect password");
 
-  // Clean sensitive fields before returning
+
   user.password = undefined;
   user.salt = undefined;
 

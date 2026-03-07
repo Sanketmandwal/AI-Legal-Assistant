@@ -26,6 +26,14 @@ const policeProfileSchema = new mongoose.Schema(
     jurisdictionAreas: [String],
 
     isVerified: { type: Boolean, default: false },
+    aadharNumber: { type: String, required: true, unique: true },
+    aadharPublicId : { type: String, required: true },
+    roleDocuments: [{ type: String, required: true }], // police ID docs
+    verificationStatus: { type: String, enum: ['pending', 'approved', 'rejected'], default: 'pending' },
+    verifiedBy: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
+    verifiedAt: Date,
+    rejectionReason: String,
+
   },
   {
     timestamps: true,

@@ -4,6 +4,12 @@ import connectDB from './services/mongo.js'
 import dotenv from 'dotenv';
 import authRoutes from './routes/authRoutes.js'
 dotenv.config()
+import lawyerRoutes from "./routes/lawyerRoutes.js";
+import adminRoutes from "./routes/adminRoutes.js";
+import policeRoutes from "./routes/policeRoutes.js";
+
+
+
 
 const app = express();
 app.use(cors());
@@ -28,6 +34,9 @@ app.cors = {
 };
 
 app.use("/api/auth", authRoutes);
+app.use("/api/lawyer", lawyerRoutes);
+app.use("/api/admin", adminRoutes);
+app.use("/api/police", policeRoutes);
 
 
 app.listen(PORT, () => console.log("Server Started on port", PORT));

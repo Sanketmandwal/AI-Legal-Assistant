@@ -6,7 +6,8 @@ import cloudinary from "../config/cloudinary.js";
 export const submitPoliceProfile = async (req, res) => {
   try {
     const user = req.user;
-
+    const userFolder = `secure/users/${user._id}`;
+    
     if (user.role !== "police") {
       return res.status(403).json({
         success: false,
@@ -17,21 +18,25 @@ export const submitPoliceProfile = async (req, res) => {
     const aadharUpload = await cloudinary.uploader.upload(
       req.files.aadharFile[0].path,
       {
-        folder: process.env.CLOUDINARY_AADHAR_FOLDER,
-        type: "authenticated",        // or "private"
-        access_control: [{ access_type: "token" }], // tightened control if enabled on plan
+        folder: `${userFolder}/aadhar`,
+        type: "authenticated",
+        resource_type: req.files.aadharFile[0].mimetype === 'application/pdf' ? 'raw' : 'image',
+        overwrite: true,
       }
     );
 
-    // 2) Upload role documents
+    // Role documents upload
     const roleDocsUploads = await Promise.all(
-      req.files.roleDocuments.map((f) =>
-        cloudinary.uploader.upload(f.path, {
-          folder: process.env.CLOUDINARY_DOCS_FOLDER,
+      req.files.roleDocuments.map(async (file, index) => {
+        const resourceType = file.mimetype === 'application/pdf' ? 'raw' : 'image';
+        return cloudinary.uploader.upload(file.path, {
+          folder: `${userFolder}/role-docs`,
+          public_id: `doc-${index + 1}`, // doc-1, doc-2, etc.
           type: "authenticated",
-          access_control: [{ access_type: "token" }],
-        })
-      )
+          resource_type: resourceType,
+          overwrite: true,
+        });
+      })
     );
 
     const profileData = {
@@ -59,6 +64,7 @@ export const submitPoliceProfile = async (req, res) => {
       success: true,
       message: "Police profile submitted for admin verification!",
       profileId: policeProfile._id,
+      userId: policeProfile.userId,
     });
   } catch (error) {
     res.status(500).json({

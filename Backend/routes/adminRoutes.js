@@ -3,12 +3,11 @@ import express from "express";
 import {
   getPendingVerifications,
   approveLawyer,
-  rejectLawyer
+  rejectLawyer,
+  listUserDocuments
 } from "../controllers/adminController.js";
 import { authMiddleware, requireRole } from "../middlewares/authMiddleware.js";
 import { approvePolice, rejectPolice } from "../controllers/adminController.js";
-import { getLawyerDocuments } from "../controllers/adminController.js";
-import { getPoliceDocuments } from "../controllers/adminController.js";
 
 
 const router = express.Router();
@@ -19,8 +18,9 @@ router.patch("/lawyers/:id/approve", authMiddleware, requireRole(['admin']), app
 router.patch("/lawyers/:id/reject", authMiddleware, requireRole(['admin']), rejectLawyer);
 router.patch("/police/:id/approve", authMiddleware, requireRole(['admin']), approvePolice);
 router.patch("/police/:id/reject", authMiddleware, requireRole(['admin']), rejectPolice);
-router.get("/lawyers/:id/documents", authMiddleware, requireRole(['admin']), getLawyerDocuments);
-router.get("/police/:id/documents", authMiddleware, requireRole(['admin']), getPoliceDocuments);
+// router.get("/lawyers/:id/documents", authMiddleware, requireRole(['admin']), getLawyerDocuments);
+// router.get("/police/:id/documents", authMiddleware, requireRole(['admin']), getPoliceDocuments);
+router.get("/users/:userId/documents", authMiddleware, requireRole(['admin']), listUserDocuments);
 
 
 

@@ -1,16 +1,33 @@
-// src/services/documentService.js
 import cloudinary from "../config/cloudinary.js";
 
 export const generateSecureDocumentUrl = (publicId) => {
+  const isPdf = publicId.includes('.pdf');
+  const resourceType = isPdf ? 'raw' : 'image';
 
-    const expiresAt = Math.floor(Date.now() / 1000) + 300; // valid for 5 minutes
+  return cloudinary.url(publicId, {
+    type: "authenticated",
+    sign_url: true,
+    secure: true,
+    resource_type: resourceType,
+    quality: "auto",
+    fetch_format: "auto",
+  });
+};
 
-    const url = cloudinary.url(publicId, {
-        type: "authenticated",
-        sign_url: true,
-        secure: true,
-        expires_at: expiresAt
-    });
+// Helper to get all user documents
+export const getUserDocuments = async (userId) => {
+  const userFolder = `secure/users/${userId}`;
+  
+  // List all assets in user folder (Admin API)
+  const result = await cloudinary.api.resources({
+    prefix: userFolder,
+    type: "authenticated",
+    resource_type: "image",
+  });
 
-    return url;
+  console.log("Cloudinary API result:", userId);
+
+  console.log("Cloudinary API result:", result);
+  
+  return result.resources;
 };

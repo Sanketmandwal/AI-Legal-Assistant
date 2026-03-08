@@ -1,7 +1,7 @@
 // src/controllers/adminController.js
 import LawyerProfile from "../models/LawyerProfile.js";
 import PoliceProfile from "../models/PoliceProfile.js";
-import { generateSecureDocumentUrl } from "../services/documentService.js";
+import { generateSecureDocumentUrl, getUserDocuments } from "../services/documentService.js";
 
 
 export const getPendingVerifications = async (req, res) => {
@@ -119,44 +119,26 @@ export const rejectPolice = async (req, res) => {
 };
 
 
-export const getLawyerDocuments = async (req, res) => {
-  try {
-    const profile = await LawyerProfile.findById(req.params.id);
-    if (!profile) {
-      return res.status(404).json({ success: false, message: "Profile not found" });
-    }
 
-    const aadharUrl = generateSecureDocumentUrl(profile.aadharPublicId);
-    const roleDocsUrls = profile.roleDocuments.map(generateSecureDocumentUrl);
+export const listUserDocuments = async (req, res) => {
+  try {
+    const { userId } = req.params;
+    const documents = await getUserDocuments(userId);
+    
+    const signedUrls = documents.map(doc => ({
+      public_id: doc.public_id,
+      url: generateSecureDocumentUrl(doc.public_id),
+      resource_type: doc.resource_type,
+      created_at: doc.created_at,
+    }));
 
     res.json({
       success: true,
-      aadharUrl,
-      roleDocsUrls,
+      userId,
+      totalDocuments: signedUrls.length,
+      documents: signedUrls,
     });
-  } catch (err) {
-    res.status(500).json({ success: false, message: err.message });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
   }
 };
-
-
-export const getPoliceDocuments = async (req, res) => {
-  try {
-    const profile = await PoliceProfile.findById(req.params.id);
-    if (!profile) {
-      return res.status(404).json({ success: false, message: "Profile not found" });
-    }
-
-    const aadharUrl = generateSecureDocumentUrl(profile.aadharPublicId);
-    const roleDocsUrls = profile.roleDocuments.map(generateSecureDocumentUrl);
-
-    res.json({
-      success: true,
-      aadharUrl,
-      roleDocsUrls,
-    });
-  } catch (err) {
-    res.status(500).json({ success: false, message: err.message });
-  }
-};
-

@@ -47,10 +47,6 @@ const userSchema = new mongoose.Schema(
     aadharVerified: { type: Boolean, default: false },
     roleVerified: { type: Boolean, default: false }, // for lawyer/police
 
-    // Aadhaar storage
-    aadharLast4: { type: String }, // last 4 digits
-    aadharHash: { type: String },  // hashed/encrypted Aadhaar
-
     // Status
     isActive: { type: Boolean, default: true },
 

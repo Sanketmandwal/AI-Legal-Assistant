@@ -15,6 +15,11 @@ export const submitPoliceProfile = async (req, res) => {
       });
     }
 
+    // Geocode address to lat/lng (Google Maps or manual)
+    const { stationAddress, district, state, lat, lng } = req.body;
+    const coordinates = [parseFloat(lng), parseFloat(lat)]; // [lng, lat]
+
+    // Upload files (unchanged)
     const aadharUpload = await cloudinary.uploader.upload(
       req.files.aadharFile[0].path,
       {
@@ -25,13 +30,12 @@ export const submitPoliceProfile = async (req, res) => {
       }
     );
 
-    // Role documents upload
     const roleDocsUploads = await Promise.all(
       req.files.roleDocuments.map(async (file, index) => {
         const resourceType = file.mimetype === 'application/pdf' ? 'raw' : 'image';
         return cloudinary.uploader.upload(file.path, {
           folder: `${userFolder}/role-docs`,
-          public_id: `doc-${index + 1}`, // doc-1, doc-2, etc.
+          public_id: `doc-${index + 1}`,
           type: "authenticated",
           resource_type: resourceType,
           overwrite: true,
@@ -43,11 +47,16 @@ export const submitPoliceProfile = async (req, res) => {
       userId: user._id,
       aadharNumber: req.body.aadharNumber,
       aadharPublicId: aadharUpload.public_id,
-      roleDocuments: roleDocsUploads.map((d) => d.public_id),
+      roleDocuments: roleDocsUploads.map(d => d.public_id), // Fixed field name
       stationName: req.body.stationName,
-      stationAddress: req.body.stationAddress,
-      district: req.body.district,
-      state: req.body.state,
+      stationAddress,
+      location: {
+        type: 'Point',
+        coordinates, // [lng, lat]
+      },
+      jurisdictionRadius: parseFloat(req.body.jurisdictionRadius) || 15,
+      district,
+      state,
       badgeId: req.body.badgeId,
       jurisdictionAreas: req.body.jurisdictionAreas?.split(",") || [],
       verificationStatus: "pending",
@@ -56,21 +65,19 @@ export const submitPoliceProfile = async (req, res) => {
     const policeProfile = new PoliceProfile(profileData);
     await policeProfile.save();
 
-    // Mark user role as pending verification
+    // Mark user pending verification
     user.roleVerified = false;
     await user.save();
 
     res.json({
       success: true,
-      message: "Police profile submitted for admin verification!",
+      message: "Police station profile submitted for admin verification!",
       profileId: policeProfile._id,
       userId: policeProfile.userId,
     });
   } catch (error) {
-    res.status(500).json({
-      success: false,
-      message: error.message
-    });
+    console.error("Police profile error:", error);
+    res.status(500).json({ success: false, message: error.message });
   }
 };
 
@@ -78,7 +85,7 @@ export const getPoliceProfile = async (req, res) => {
   try {
     const profile = await PoliceProfile.findOne({ userId: req.user._id })
       .populate("userId", "name email phone");
-
+    
     res.json({
       success: true,
       profile: profile || null,

@@ -7,7 +7,8 @@ dotenv.config()
 import lawyerRoutes from "./routes/lawyerRoutes.js";
 import adminRoutes from "./routes/adminRoutes.js";
 import policeRoutes from "./routes/policeRoutes.js";
-
+import firRoutes from "./routes/firRoutes.js";
+import citizenRoutes from "./routes/citizenRoutes.js";
 
 
 
@@ -37,6 +38,8 @@ app.use("/api/auth", authRoutes);
 app.use("/api/lawyer", lawyerRoutes);
 app.use("/api/admin", adminRoutes);
 app.use("/api/police", policeRoutes);
+app.use("/api/fir", firRoutes);
+app.use("/api/citizen", citizenRoutes);
 
 
 app.listen(PORT, () => console.log("Server Started on port", PORT));

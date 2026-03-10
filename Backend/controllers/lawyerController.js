@@ -2,16 +2,25 @@
 import LawyerProfile from "../models/LawyerProfile.js";
 import User from "../models/User.js";
 import cloudinary from "../config/cloudinary.js";
+import LawyerReview from "../models/LawyerReview.js";
 
 export const submitLawyerProfile = async (req, res) => {
   try {
     const user = req.user;
     const userFolder = `secure/users/${user._id}`;
-    
+
     if (user.role !== "lawyer") {
       return res.status(403).json({
         success: false,
-        message: "Lawyer access only"
+        message: "Lawyer access only",
+      });
+    }
+
+    const existingProfile = await LawyerProfile.findOne({ userId: user._id });
+    if (existingProfile) {
+      return res.status(400).json({
+        success: false,
+        message: "Lawyer profile already exists",
       });
     }
 
@@ -20,18 +29,18 @@ export const submitLawyerProfile = async (req, res) => {
       {
         folder: `${userFolder}/aadhar`,
         type: "authenticated",
-        resource_type: req.files.aadharFile[0].mimetype === 'application/pdf' ? 'raw' : 'image',
+        resource_type:
+          req.files.aadharFile[0].mimetype === "application/pdf" ? "raw" : "image",
         overwrite: true,
       }
     );
 
-    // Role documents upload
     const roleDocsUploads = await Promise.all(
       req.files.roleDocuments.map(async (file, index) => {
-        const resourceType = file.mimetype === 'application/pdf' ? 'raw' : 'image';
+        const resourceType = file.mimetype === "application/pdf" ? "raw" : "image";
         return cloudinary.uploader.upload(file.path, {
           folder: `${userFolder}/role-docs`,
-          public_id: `doc-${index + 1}`, // doc-1, doc-2, etc.
+          public_id: `doc-${index + 1}`,
           type: "authenticated",
           resource_type: resourceType,
           overwrite: true,
@@ -39,42 +48,129 @@ export const submitLawyerProfile = async (req, res) => {
       })
     );
 
+    const lat = req.body.lat ? Number(req.body.lat) : null;
+    const lng = req.body.lng ? Number(req.body.lng) : null;
+
     const profileData = {
       userId: user._id,
       aadharNumber: req.body.aadharNumber,
       aadharPublicId: aadharUpload.public_id,
       roleDocuments: roleDocsUploads.map((d) => d.public_id),
       barId: req.body.barId,
-      specialization: req.body.specialization?.split(",") || [],
+      specialization: req.body.specialization
+        ? req.body.specialization.split(",").map((s) => s.trim().toLowerCase())
+        : [],
       experienceYears: Number(req.body.experienceYears),
       city: req.body.city,
       state: req.body.state,
       bio: req.body.bio,
-      languages: req.body.languages?.split(",") || [],
+      languages: req.body.languages
+        ? req.body.languages.split(",").map((l) => l.trim().toLowerCase())
+        : [],
       feePerConsultation: Number(req.body.feePerConsultation),
       verificationStatus: "pending",
+      availabilityStatus: "available",
+      ...(lat !== null &&
+        lng !== null && {
+          location: {
+            type: "Point",
+            coordinates: [lng, lat],
+          },
+        }),
     };
 
     const lawyerProfile = new LawyerProfile(profileData);
     await lawyerProfile.save();
 
-    // Mark user role as pending verification
     user.roleVerified = false;
     await user.save();
 
-    res.json({
+    return res.json({
       success: true,
       message: "Lawyer profile submitted for admin verification!",
       profileId: lawyerProfile._id,
       userId: lawyerProfile.userId,
     });
   } catch (error) {
-    res.status(500).json({
+    return res.status(500).json({
       success: false,
-      message: error.message
+      message: error.message,
     });
   }
 };
+
+
+
+export const getLawyerReviews = async (req, res) => {
+  try {
+    const { lawyerId } = req.params;
+    const page = Math.max(Number(req.query.page || 1), 1);
+    const limit = Math.min(Math.max(Number(req.query.limit || 10), 1), 20);
+    const skip = (page - 1) * limit;
+
+    const lawyerProfile = await LawyerProfile.findById(lawyerId)
+      .populate("userId", "name email");
+
+    if (!lawyerProfile) {
+      return res.status(404).json({
+        success: false,
+        message: "Lawyer profile not found",
+      });
+    }
+
+    const [reviews, total] = await Promise.all([
+      LawyerReview.find({
+        lawyerProfileId: lawyerProfile._id,
+        reviewerRole: "citizen",
+      })
+        .populate("reviewerId", "name")
+        .sort({ createdAt: -1 })
+        .skip(skip)
+        .limit(limit),
+      LawyerReview.countDocuments({
+        lawyerProfileId: lawyerProfile._id,
+        reviewerRole: "citizen",
+      }),
+    ]);
+
+    return res.status(200).json({
+      success: true,
+      lawyer: {
+        _id: lawyerProfile._id,
+        userId: lawyerProfile.userId?._id,
+        name: lawyerProfile.userId?.name,
+        email: lawyerProfile.userId?.email,
+        specialization: lawyerProfile.specialization,
+        city: lawyerProfile.city,
+        state: lawyerProfile.state,
+        feePerConsultation: lawyerProfile.feePerConsultation,
+        ratingAverage: lawyerProfile.ratingAverage || 0,
+        ratingCount: lawyerProfile.ratingCount || 0,
+      },
+      pagination: {
+        page,
+        limit,
+        total,
+        totalPages: Math.ceil(total / limit),
+      },
+      reviews: reviews.map((review) => ({
+        _id: review._id,
+        rating: review.rating,
+        reviewText: review.reviewText,
+        reviewerName: review.reviewerId?.name || "Anonymous",
+        createdAt: review.createdAt,
+      })),
+    });
+  } catch (error) {
+    console.error("getLawyerReviews error:", error);
+    return res.status(500).json({
+      success: false,
+      message: error.message || "Failed to fetch lawyer reviews",
+    });
+  }
+};
+
+
 
 export const getLawyerProfile = async (req, res) => {
   try {

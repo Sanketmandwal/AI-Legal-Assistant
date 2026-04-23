@@ -13,7 +13,7 @@ export function useUpdateFIRStatus() {
   const qc = useQueryClient()
   return useMutation({
     mutationFn: ({ id, status, message }) => axiosClient.patch(`/fir/police/${id}/status`, { status, message }),
-    onSuccess: () => { qc.invalidateQueries({ queryKey: ['policeFIRs'] }); toast.success('FIR status updated!') },
+    onSuccess: (_, vars) => { qc.invalidateQueries({ queryKey: ['policeFIRs'] }); qc.invalidateQueries({ queryKey: ['fir', vars.id] }); toast.success('FIR status updated!') },
     onError: (err) => toast.error(err.response?.data?.message || 'Failed to update status'),
   })
 }

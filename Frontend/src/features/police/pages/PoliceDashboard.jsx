@@ -12,9 +12,9 @@ import { FileText, Clock, CheckCircle, Search, AlertTriangle, ArrowRight, Shield
 
 function StatCard({ icon: Icon, label, value, color, loading }) {
   return (
-    <Card className="border-0 shadow-sm"><CardContent className="flex items-center gap-4 p-4 sm:p-5">
-      <div className={`h-11 w-11 rounded-xl flex items-center justify-center shrink-0 ${color}`}><Icon className="h-5 w-5 text-white" /></div>
-      <div>{loading ? <Skeleton className="h-7 w-12 mb-1" /> : <div className="text-2xl font-bold text-slate-900">{value}</div>}<div className="text-xs text-slate-500">{label}</div></div>
+    <Card className="border-0 shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-0.5"><CardContent className="flex items-center gap-4 p-5">
+      <div className={`h-12 w-12 rounded-2xl flex items-center justify-center shrink-0 ${color} shadow-lg`}><Icon className="h-5 w-5 text-white" /></div>
+      <div>{loading ? <Skeleton className="h-8 w-14 mb-1 rounded-lg" /> : <div className="text-3xl font-extrabold text-slate-900 tracking-tight">{value}</div>}<div className="text-xs text-slate-500 font-medium mt-0.5">{label}</div></div>
     </CardContent></Card>
   )
 }
@@ -33,12 +33,16 @@ export default function PoliceDashboard() {
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-        <div>
-          <h1 className="text-2xl font-bold text-slate-900">Welcome, {user?.name?.split(' ')[0]} 👋</h1>
-          <p className="text-sm text-slate-500 mt-0.5">Manage FIRs assigned to your station</p>
+      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-rose-600 via-red-600 to-pink-700 p-6 sm:p-8 text-white shadow-xl">
+        <div className="absolute top-0 right-0 w-64 h-64 bg-white/5 rounded-full -translate-y-1/2 translate-x-1/3" />
+        <div className="absolute bottom-0 left-0 w-48 h-48 bg-white/5 rounded-full translate-y-1/2 -translate-x-1/4" />
+        <div className="relative z-10 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+          <div>
+            <h1 className="text-2xl sm:text-3xl font-bold">Welcome back, {user?.name?.split(' ')[0]} 👋</h1>
+            <p className="text-rose-100 text-sm mt-1">Manage FIRs assigned to your station</p>
+          </div>
+          <Button asChild className="bg-white text-rose-700 hover:bg-rose-50 shadow-lg font-semibold"><Link to="/police/firs"><FileText className="mr-2 h-4 w-4" /> View All FIRs</Link></Button>
         </div>
-        <Button asChild><Link to="/police/firs"><FileText className="mr-2 h-4 w-4" /> View All FIRs</Link></Button>
       </div>
 
       {station && (

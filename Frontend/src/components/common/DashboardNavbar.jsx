@@ -3,6 +3,7 @@ import { useState } from 'react'
 import { Link, NavLink, useNavigate } from 'react-router-dom'
 import { useSelector, useDispatch } from 'react-redux'
 import { logout } from '@/features/auth/slices/authSlice'
+import { useMyChatRooms } from '@/features/chat/api/chatApi'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
@@ -13,22 +14,12 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
+  DropdownMenuGroup,
 } from '@/components/ui/dropdown-menu'
 import { Sheet, SheetContent, SheetTrigger, SheetTitle } from '@/components/ui/sheet'
 import {
-  LayoutDashboard,
-  FilePlus,
-  FileText,
-  Users,
-  MessageSquare,
-  User,
-  Inbox,
-  History,
-  Star,
-  ShieldCheck,
-  LogOut,
-  Menu,
-  Scale,
+  LayoutDashboard, FilePlus, FileText, Users, MessageSquare, User, Inbox,
+  History, Star, ShieldCheck, LogOut, Menu, Scale, ChevronDown, Settings
 } from 'lucide-react'
 
 const NAV_ITEMS = {
@@ -37,13 +28,13 @@ const NAV_ITEMS = {
     { label: 'File FIR', path: '/citizen/file-fir', icon: FilePlus },
     { label: 'My FIRs', path: '/citizen/my-firs', icon: FileText },
     { label: 'Consultations', path: '/citizen/consultations', icon: Users },
-    { label: 'Chat', path: '/citizen/chat', icon: MessageSquare },
+    { label: 'Chat', path: '/citizen/chat', icon: MessageSquare, showBadge: true },
   ],
   lawyer: [
     { label: 'Dashboard', path: '/lawyer/dashboard', icon: LayoutDashboard },
     { label: 'Requests', path: '/lawyer/requests', icon: Inbox },
     { label: 'History', path: '/lawyer/history', icon: History },
-    { label: 'Chat', path: '/lawyer/chat', icon: MessageSquare },
+    { label: 'Chat', path: '/lawyer/chat', icon: MessageSquare, showBadge: true },
     { label: 'Reviews', path: '/lawyer/reviews', icon: Star },
   ],
   police: [
@@ -56,18 +47,11 @@ const NAV_ITEMS = {
   ],
 }
 
-const ROLE_COLORS = {
-  citizen: 'bg-blue-100 text-blue-800',
-  lawyer: 'bg-emerald-100 text-emerald-800',
-  police: 'bg-rose-100 text-rose-800',
-  admin: 'bg-purple-100 text-purple-800',
-}
-
-const ROLE_ACTIVE = {
-  citizen: 'text-blue-700 border-blue-600',
-  lawyer: 'text-emerald-700 border-emerald-600',
-  police: 'text-rose-700 border-rose-600',
-  admin: 'text-purple-700 border-purple-600',
+const ROLE_ACCENT = {
+  citizen: { bg: 'bg-blue-600', light: 'bg-blue-50 text-blue-700', border: 'border-blue-500', text: 'text-blue-700', badge: 'bg-blue-100 text-blue-800' },
+  lawyer: { bg: 'bg-emerald-600', light: 'bg-emerald-50 text-emerald-700', border: 'border-emerald-500', text: 'text-emerald-700', badge: 'bg-emerald-100 text-emerald-800' },
+  police: { bg: 'bg-rose-600', light: 'bg-rose-50 text-rose-700', border: 'border-rose-500', text: 'text-rose-700', badge: 'bg-rose-100 text-rose-800' },
+  admin: { bg: 'bg-purple-600', light: 'bg-purple-50 text-purple-700', border: 'border-purple-500', text: 'text-purple-700', badge: 'bg-purple-100 text-purple-800' },
 }
 
 export default function DashboardNavbar() {
@@ -76,16 +60,13 @@ export default function DashboardNavbar() {
   const dispatch = useDispatch()
   const navigate = useNavigate()
 
+  const { data: chatRoomsData } = useMyChatRooms()
+  const totalUnread = (chatRoomsData?.rooms || []).reduce((sum, room) => sum + (room.unreadCount || 0), 0)
+
   const role = user?.role || 'citizen'
   const navItems = NAV_ITEMS[role] || []
-  const initials = user?.name
-    ? user.name
-        .split(' ')
-        .map((n) => n[0])
-        .join('')
-        .toUpperCase()
-        .slice(0, 2)
-    : '?'
+  const accent = ROLE_ACCENT[role]
+  const initials = user?.name ? user.name.split(' ').map((n) => n[0]).join('').toUpperCase().slice(0, 2) : '?'
 
   const handleLogout = () => {
     dispatch(logout())
@@ -95,71 +76,94 @@ export default function DashboardNavbar() {
   const profilePath = `/${role}/profile`
 
   return (
-    <header className="sticky top-0 z-50 border-b border-slate-200 bg-white/95 backdrop-blur-md">
+    <header className="sticky top-0 z-50 bg-white border-b border-slate-200/80 shadow-sm">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex h-16 items-center justify-between">
+        <div className="flex h-[4.25rem] items-center justify-between">
+
           {/* Logo */}
-          <Link to="/dashboard" className="flex items-center gap-2 shrink-0">
-            <div className="h-8 w-8 bg-primary rounded-lg flex items-center justify-center">
-              <Scale className="h-4 w-4 text-white" />
+          <Link to="/dashboard" className="flex items-center gap-2.5 shrink-0 group">
+            <div className={`h-9 w-9 ${accent.bg} rounded-xl flex items-center justify-center shadow-md group-hover:shadow-lg transition-shadow`}>
+              <Scale className="h-[18px] w-[18px] text-white" />
             </div>
-            <span className="font-bold text-lg bg-gradient-to-r from-primary to-blue-700 bg-clip-text text-transparent hidden sm:inline">
-              Legal Assistant
-            </span>
+            <div className="hidden sm:block">
+              <span className="font-bold text-lg text-slate-900 tracking-tight">Legal Assistant</span>
+              <span className="text-[10px] text-slate-400 block -mt-1 leading-none">AI Powered</span>
+            </div>
           </Link>
 
           {/* Desktop Nav */}
-          <nav className="hidden md:flex items-center gap-1">
+          <nav className="hidden md:flex items-center gap-0.5 bg-slate-100/70 rounded-xl px-1.5 py-1">
             {navItems.map((item) => (
               <NavLink
                 key={item.path}
                 to={item.path}
                 className={({ isActive }) =>
-                  `flex items-center gap-1.5 px-3 py-2 text-sm font-medium rounded-lg transition-all duration-200 border-b-2 ${
+                  `relative flex items-center gap-1.5 px-3.5 py-2 text-[13px] font-medium rounded-lg transition-all duration-200 ${
                     isActive
-                      ? `${ROLE_ACTIVE[role]} bg-slate-50 border-b-2`
-                      : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50 border-transparent'
+                      ? `${accent.light} shadow-sm`
+                      : 'text-slate-500 hover:text-slate-800 hover:bg-white/60'
                   }`
                 }
               >
                 <item.icon className="h-4 w-4" />
                 {item.label}
+                {item.showBadge && totalUnread > 0 && (
+                  <Badge className="absolute -top-1 -right-1 h-4 w-4 p-0 flex items-center justify-center rounded-full bg-red-500 text-white text-[9px] border-2 border-white shadow-sm">
+                    {totalUnread}
+                  </Badge>
+                )}
               </NavLink>
             ))}
           </nav>
 
-          {/* Right side: Role badge + User menu */}
+          {/* Right side: Role badge + Avatar Dropdown */}
           <div className="flex items-center gap-3">
-            <Badge className={`${ROLE_COLORS[role]} border-0 text-xs font-medium capitalize hidden sm:inline-flex`}>
+            <Badge className={`${accent.badge} border-0 text-[11px] font-semibold capitalize hidden sm:inline-flex px-2.5 py-0.5`}>
               {role}
             </Badge>
 
+            {/* Avatar Dropdown — Profile & Logout live HERE */}
             <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="ghost" className="relative h-9 w-9 rounded-full p-0">
-                  <Avatar className="h-9 w-9">
-                    <AvatarFallback className="bg-primary/10 text-primary text-sm font-semibold">
-                      {initials}
-                    </AvatarFallback>
-                  </Avatar>
-                </Button>
+              <DropdownMenuTrigger className="flex items-center gap-2 rounded-xl px-2 py-1.5 hover:bg-slate-100 transition-colors cursor-pointer outline-none">
+                <Avatar className="h-9 w-9 ring-2 ring-slate-200">
+                  <AvatarFallback className={`${accent.bg} text-white text-sm font-bold`}>
+                    {initials}
+                  </AvatarFallback>
+                </Avatar>
+                <div className="hidden sm:block text-left">
+                  <div className="text-sm font-semibold text-slate-800 leading-tight">{user?.name?.split(' ')[0] || user?.name}</div>
+                  <div className="text-[10px] text-slate-400 leading-tight">{user?.email?.split('@')[0]}</div>
+                </div>
+                <ChevronDown className="h-3.5 w-3.5 text-slate-400 hidden sm:block" />
               </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-56">
-                <DropdownMenuLabel>
-                  <div className="flex flex-col">
-                    <span className="text-sm font-semibold">{user?.name}</span>
-                    <span className="text-xs text-slate-500">{user?.email}</span>
-                  </div>
-                </DropdownMenuLabel>
+              
+              <DropdownMenuContent align="end" className="w-60 p-2 rounded-xl shadow-xl border border-slate-200">
+                <DropdownMenuGroup>
+                  <DropdownMenuLabel className="pb-2">
+                    <div className="flex items-center gap-3">
+                      <Avatar className="h-10 w-10">
+                        <AvatarFallback className={`${accent.bg} text-white font-bold`}>{initials}</AvatarFallback>
+                      </Avatar>
+                      <div>
+                        <div className="text-sm font-bold text-slate-900">{user?.name}</div>
+                        <div className="text-xs text-slate-500">{user?.email}</div>
+                      </div>
+                    </div>
+                  </DropdownMenuLabel>
+                </DropdownMenuGroup>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem onClick={() => navigate(profilePath)}>
-                  <User className="mr-2 h-4 w-4" />
-                  Profile
+                <DropdownMenuItem onClick={() => navigate(profilePath)} className="py-2.5 rounded-lg cursor-pointer">
+                  <User className="mr-2.5 h-4 w-4 text-slate-500" />
+                  <span className="font-medium">My Profile</span>
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => navigate('/dashboard')} className="py-2.5 rounded-lg cursor-pointer">
+                  <LayoutDashboard className="mr-2.5 h-4 w-4 text-slate-500" />
+                  <span className="font-medium">Dashboard</span>
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem onClick={handleLogout} className="text-red-600 focus:text-red-600">
-                  <LogOut className="mr-2 h-4 w-4" />
-                  Log out
+                <DropdownMenuItem onClick={handleLogout} className="py-2.5 rounded-lg cursor-pointer text-red-600 focus:text-red-600 focus:bg-red-50">
+                  <LogOut className="mr-2.5 h-4 w-4" />
+                  <span className="font-medium">Log Out</span>
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
@@ -167,70 +171,47 @@ export default function DashboardNavbar() {
             {/* Mobile hamburger */}
             <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
               <SheetTrigger asChild>
-                <Button variant="ghost" size="icon" className="md:hidden">
+                <Button variant="ghost" size="icon" className="md:hidden h-10 w-10">
                   <Menu className="h-5 w-5" />
                 </Button>
               </SheetTrigger>
               <SheetContent side="right" className="w-72 pt-10">
                 <SheetTitle className="sr-only">Navigation Menu</SheetTitle>
                 <div className="flex flex-col gap-1">
-                  <div className="flex items-center gap-3 px-3 py-3 mb-4 border-b border-slate-100">
-                    <Avatar className="h-10 w-10">
-                      <AvatarFallback className="bg-primary/10 text-primary font-semibold">
-                        {initials}
-                      </AvatarFallback>
+                  {/* Mobile user card */}
+                  <div className="flex items-center gap-3 px-3 py-4 mb-2 rounded-xl bg-slate-50">
+                    <Avatar className="h-11 w-11">
+                      <AvatarFallback className={`${accent.bg} text-white font-bold`}>{initials}</AvatarFallback>
                     </Avatar>
                     <div>
-                      <div className="text-sm font-semibold">{user?.name}</div>
-                      <Badge className={`${ROLE_COLORS[role]} border-0 text-xs mt-0.5 capitalize`}>
-                        {role}
-                      </Badge>
+                      <div className="text-sm font-bold text-slate-900">{user?.name}</div>
+                      <div className="text-xs text-slate-500">{user?.email}</div>
+                      <Badge className={`${accent.badge} border-0 text-[10px] mt-1 capitalize`}>{role}</Badge>
                     </div>
                   </div>
 
                   {navItems.map((item) => (
-                    <NavLink
-                      key={item.path}
-                      to={item.path}
-                      onClick={() => setMobileOpen(false)}
-                      className={({ isActive }) =>
-                        `flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
-                          isActive
-                            ? `${ROLE_ACTIVE[role]} bg-slate-50`
-                            : 'text-slate-600 hover:bg-slate-50'
-                        }`
-                      }
+                    <NavLink key={item.path} to={item.path} onClick={() => setMobileOpen(false)}
+                      className={({ isActive }) => `flex items-center gap-3 px-3 py-3 rounded-xl text-sm font-medium transition-all ${isActive ? `${accent.light} shadow-sm` : 'text-slate-600 hover:bg-slate-50'}`}
                     >
                       <item.icon className="h-5 w-5" />
                       {item.label}
                     </NavLink>
                   ))}
 
-                  <NavLink
-                    to={profilePath}
-                    onClick={() => setMobileOpen(false)}
-                    className={({ isActive }) =>
-                      `flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
-                        isActive
-                          ? `${ROLE_ACTIVE[role]} bg-slate-50`
-                          : 'text-slate-600 hover:bg-slate-50'
-                      }`
-                    }
+                  <NavLink to={profilePath} onClick={() => setMobileOpen(false)}
+                    className={({ isActive }) => `flex items-center gap-3 px-3 py-3 rounded-xl text-sm font-medium transition-all ${isActive ? `${accent.light} shadow-sm` : 'text-slate-600 hover:bg-slate-50'}`}
                   >
                     <User className="h-5 w-5" />
-                    Profile
+                    My Profile
                   </NavLink>
 
-                  <div className="border-t border-slate-100 mt-4 pt-4">
-                    <button
-                      onClick={() => {
-                        setMobileOpen(false)
-                        handleLogout()
-                      }}
-                      className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-red-600 hover:bg-red-50 w-full transition-colors"
+                  <div className="border-t border-slate-100 mt-3 pt-3">
+                    <button onClick={() => { setMobileOpen(false); handleLogout() }}
+                      className="flex items-center gap-3 px-3 py-3 rounded-xl text-sm font-medium text-red-600 hover:bg-red-50 w-full transition-all"
                     >
                       <LogOut className="h-5 w-5" />
-                      Log out
+                      Log Out
                     </button>
                   </div>
                 </div>

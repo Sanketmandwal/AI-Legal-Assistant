@@ -34,10 +34,10 @@ export const getRecommendedLawyersForFIR = async (req, res) => {
       });
     }
 
-    if (fir.status !== "accepted") {
+    if (!["accepted", "investigating"].includes(fir.status)) {
       return res.status(400).json({
         success: false,
-        message: "Lawyer recommendations are available only for accepted FIRs",
+        message: "Lawyer recommendations are available only for accepted or investigating FIRs",
       });
     }
 
@@ -65,7 +65,6 @@ export const getRecommendedLawyersForFIR = async (req, res) => {
           query: {
             verificationStatus: "approved",
             availabilityStatus: "available",
-            specialization: { $in: specializations },
           },
         },
       },

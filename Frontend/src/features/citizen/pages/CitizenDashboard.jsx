@@ -13,14 +13,14 @@ import { FilePlus, FileText, Users, MessageSquare, ArrowRight, Clock, CheckCircl
 
 function StatCard({ icon: Icon, label, value, color, loading }) {
   return (
-    <Card className="border-0 shadow-sm hover:shadow-md transition-shadow">
-      <CardContent className="flex items-center gap-4 p-4 sm:p-5">
-        <div className={`h-11 w-11 rounded-xl flex items-center justify-center shrink-0 ${color}`}>
-          <Icon className="h-5 w-5 text-white" />
+    <Card className="border-0 shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-0.5">
+      <CardContent className="flex items-center gap-4 p-5">
+        <div className={`h-12 w-12 rounded-2xl flex items-center justify-center shrink-0 ${color} shadow-lg`}>
+          <Icon className="h-5.5 w-5.5 text-white" />
         </div>
         <div>
-          {loading ? <Skeleton className="h-7 w-12 mb-1" /> : <div className="text-2xl font-bold text-slate-900">{value}</div>}
-          <div className="text-xs text-slate-500">{label}</div>
+          {loading ? <Skeleton className="h-8 w-14 mb-1 rounded-lg" /> : <div className="text-3xl font-extrabold text-slate-900 tracking-tight">{value}</div>}
+          <div className="text-xs text-slate-500 font-medium mt-0.5">{label}</div>
         </div>
       </CardContent>
     </Card>
@@ -44,13 +44,17 @@ export default function CitizenDashboard() {
 
   return (
     <div className="space-y-6">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-        <div>
-          <h1 className="text-2xl font-bold text-slate-900">Welcome, {user?.name?.split(' ')[0]} 👋</h1>
-          <p className="text-sm text-slate-500 mt-0.5">Here's an overview of your legal activities</p>
+      {/* Hero Header */}
+      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-blue-600 via-indigo-600 to-purple-700 p-6 sm:p-8 text-white shadow-xl">
+        <div className="absolute top-0 right-0 w-64 h-64 bg-white/5 rounded-full -translate-y-1/2 translate-x-1/3" />
+        <div className="absolute bottom-0 left-0 w-48 h-48 bg-white/5 rounded-full translate-y-1/2 -translate-x-1/4" />
+        <div className="relative z-10 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+          <div>
+            <h1 className="text-2xl sm:text-3xl font-bold">Welcome back, {user?.name?.split(' ')[0]} 👋</h1>
+            <p className="text-blue-100 text-sm mt-1">Here's an overview of your legal activities</p>
+          </div>
+          <Button asChild className="bg-white text-blue-700 hover:bg-blue-50 shadow-lg font-semibold"><Link to="/citizen/file-fir"><FilePlus className="mr-2 h-4 w-4" /> File New FIR</Link></Button>
         </div>
-        <Button asChild><Link to="/citizen/file-fir"><FilePlus className="mr-2 h-4 w-4" /> File New FIR</Link></Button>
       </div>
 
       {/* Stats Grid */}

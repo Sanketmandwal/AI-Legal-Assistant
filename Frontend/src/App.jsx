@@ -2,7 +2,6 @@
 import { BrowserRouter, Routes, Route } from 'react-router-dom'
 
 // Layouts & Guards
-import PublicLayout from '@/components/common/PublicLayout'
 import DashboardLayout from '@/components/common/DashboardLayout'
 import ProtectedRoute from '@/components/common/ProtectedRoute'
 import RoleRedirect from '@/components/common/RoleRedirect'
@@ -21,19 +20,32 @@ import CitizenOnboarding from '@/features/onboarding/pages/CitizenOnboarding'
 import LawyerOnboarding from '@/features/onboarding/pages/LawyerOnboarding'
 import PoliceOnboarding from '@/features/onboarding/pages/PoliceOnboarding'
 
-// Dashboards
+// Citizen Pages
 import CitizenDashboard from '@/features/citizen/pages/CitizenDashboard'
+import FileFIRPage from '@/features/citizen/pages/FileFIRPage'
+import MyFIRsPage from '@/features/citizen/pages/MyFIRsPage'
+import FIRDetailPage from '@/features/citizen/pages/FIRDetailPage'
+import LawyerRecommendations from '@/features/citizen/pages/LawyerRecommendations'
+import ConsultationsPage from '@/features/citizen/pages/ConsultationsPage'
+import CitizenProfilePage from '@/features/citizen/pages/CitizenProfilePage'
+
+// Lawyer Pages
 import LawyerDashboard from '@/features/lawyer/pages/LawyerDashboard'
+import IncomingRequestsPage from '@/features/lawyer/pages/IncomingRequestsPage'
+import ConsultationHistoryPage from '@/features/lawyer/pages/ConsultationHistoryPage'
+import LawyerProfilePage from '@/features/lawyer/pages/LawyerProfilePage'
+import LawyerReviewsPage from '@/features/lawyer/pages/LawyerReviewsPage'
+
+// Police Pages
 import PoliceDashboard from '@/features/police/pages/PoliceDashboard'
+import PoliceFIRsPage from '@/features/police/pages/PoliceFIRsPage'
+import PoliceFIRDetailPage from '@/features/police/pages/PoliceFIRDetailPage'
+import PoliceProfilePage from '@/features/police/pages/PoliceProfilePage'
+
+// Admin Pages
 import AdminDashboard from '@/features/admin/pages/AdminDashboard'
 import VerificationPanel from '@/features/admin/pages/VerificationPanel'
 
-// Citizen sub-pages (placeholders for now)
-import { FileFIRPage, MyFIRsPage, FIRDetailPage, LawyerRecommendations, ConsultationsPage, CitizenProfilePage } from '@/features/citizen/pages/PlaceholderPages'
-// Lawyer sub-pages
-import { IncomingRequestsPage, ConsultationHistoryPage, LawyerProfilePage, LawyerReviewsPage } from '@/features/lawyer/pages/PlaceholderPages'
-// Police sub-pages
-import { PoliceFIRsPage, PoliceFIRDetailPage, PoliceProfilePage } from '@/features/police/pages/PlaceholderPages'
 // Chat
 import ChatPage from '@/features/chat/pages/ChatPage'
 
@@ -47,7 +59,7 @@ export default function App() {
         <Route path="/signup" element={<SignupPage />} />
         <Route path="/verify-otp" element={<VerifyOtpPage />} />
 
-        {/* ─── Onboarding (no dashboard layout, standalone pages) ─── */}
+        {/* ─── Onboarding ─── */}
         <Route path="/onboarding/citizen" element={<CitizenOnboarding />} />
         <Route path="/onboarding/lawyer" element={<LawyerOnboarding />} />
         <Route path="/onboarding/police" element={<PoliceOnboarding />} />

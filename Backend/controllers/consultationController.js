@@ -37,10 +37,10 @@ export const createConsultationRequest = async (req, res) => {
       });
     }
 
-    if (fir.status !== "accepted") {
+    if (!["accepted", "investigating"].includes(fir.status)) {
       return res.status(400).json({
         success: false,
-        message: "Consultation can be requested only for accepted FIRs",
+        message: "Consultation can be requested only for accepted or investigating FIRs",
       });
     }
 

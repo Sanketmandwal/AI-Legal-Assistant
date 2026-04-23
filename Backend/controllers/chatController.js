@@ -6,9 +6,11 @@ import { generateSecureEvidenceUrl } from "../services/firEvidenceService.js";
 import mongoose from "mongoose";
 
 const canAccessRoom = (room, user) => {
+  const cId = room.citizenId?._id || room.citizenId;
+  const lId = room.lawyerUserId?._id || room.lawyerUserId;
   return (
-    String(room.citizenId) === String(user._id) ||
-    String(room.lawyerUserId) === String(user._id)
+    String(cId) === String(user._id) ||
+    String(lId) === String(user._id)
   );
 };
 

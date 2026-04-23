@@ -40,7 +40,7 @@ function EvidenceItem({ att }) {
           <img src={signedUrl} alt={att.filename} className="w-full h-28 object-cover" loading="lazy" />
           <div className="absolute inset-0 bg-black/0 group-hover:bg-black/30 transition-all flex items-center justify-center opacity-0 group-hover:opacity-100">
             <a href={signedUrl} target="_blank" rel="noopener noreferrer">
-              <Button size="sm" variant="secondary" className="shadow-lg"><Eye className="mr-1 h-3 w-3" /> View</Button>
+              <Button size="sm" variant="secondary" ><Eye className="mr-1 h-3 w-3" /> View</Button>
             </a>
           </div>
         </div>
@@ -85,7 +85,7 @@ export default function TimelineView({ events = [] }) {
               </div>
 
               <div className="flex-1 min-w-0 rounded-xl border border-slate-100 bg-white p-4 shadow-sm hover:shadow-md transition-shadow">
-                <p className="text-sm text-slate-800 leading-relaxed">{event.message}</p>
+                <p className="text-sm text-slate-800 leading-relaxed break-words whitespace-pre-wrap">{event.message}</p>
 
                 {event.meta?.oldStatus && event.meta?.newStatus && (
                   <div className="flex items-center gap-2 mt-2">

@@ -36,15 +36,15 @@ export default function LoginPage() {
 
   return (
     <PublicLayout>
-      <div className="min-h-[calc(100vh-8rem)] flex items-center justify-center py-12 px-4">
-        <Card className="w-full max-w-md border-0 shadow-xl">
+      <div className="flex min-h-[calc(100vh-8rem)] items-center justify-center px-4 py-12">
+        <Card className="w-full max-w-md">
           <CardHeader className="text-center pb-4">
             <div className="flex justify-center mb-4">
-              <div className="h-12 w-12 bg-primary rounded-xl flex items-center justify-center">
+              <div className="flex size-12 items-center justify-center rounded-xl bg-primary text-primary-foreground shadow-sm shadow-primary/20">
                 <Scale className="h-6 w-6 text-white" />
               </div>
             </div>
-            <CardTitle className="text-2xl">Welcome Back</CardTitle>
+            <CardTitle className="text-2xl">Welcome back</CardTitle>
             <CardDescription>Login to your Legal Assistant account</CardDescription>
           </CardHeader>
 

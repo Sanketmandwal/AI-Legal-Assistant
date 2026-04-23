@@ -18,7 +18,7 @@ export default function PoliceProfilePage() {
 
   return (
     <div className="max-w-3xl mx-auto space-y-6">
-      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-rose-600 via-red-600 to-pink-700 p-6 sm:p-8 shadow-xl">
+      <div className="relative overflow-hidden rounded-2xl border border-border bg-card p-5 sm:p-7 shadow-sm">
         <div className="absolute top-0 right-0 w-64 h-64 bg-white/5 rounded-full -translate-y-1/2 translate-x-1/3" />
         <div className="relative z-10 flex items-center gap-5">
           <Avatar className="h-20 w-20 border-4 border-white/30"><AvatarFallback className="bg-white/20 text-white text-2xl font-bold">{initials}</AvatarFallback></Avatar>
@@ -32,10 +32,10 @@ export default function PoliceProfilePage() {
         </div>
       </div>
 
-      <Card className="border-0 shadow-lg">
+      <Card className="">
         <CardHeader><CardTitle className="text-base flex items-center gap-2"><Shield className="h-4 w-4 text-rose-600" /> Station Information</CardTitle></CardHeader>
         <CardContent className="space-y-3">
-          <div className="p-4 bg-gradient-to-br from-rose-50 to-orange-50 rounded-xl"><div className="text-xs text-slate-400">Station Name</div><div className="text-lg font-bold text-slate-900">{profile?.stationName || 'N/A'}</div></div>
+          <div className="p-4 bg-muted/50 rounded-xl"><div className="text-xs text-slate-400">Station Name</div><div className="text-lg font-bold text-slate-900">{profile?.stationName || 'N/A'}</div></div>
           <div className="grid sm:grid-cols-2 gap-3">
             <div className="p-3 bg-slate-50 rounded-xl"><div className="text-xs text-slate-400">District</div><div className="text-sm font-medium">{profile?.district || 'N/A'}</div></div>
             <div className="p-3 bg-slate-50 rounded-xl"><div className="text-xs text-slate-400">State</div><div className="text-sm font-medium">{profile?.state || 'N/A'}</div></div>
@@ -45,7 +45,7 @@ export default function PoliceProfilePage() {
         </CardContent>
       </Card>
 
-      <Card className="border-0 shadow-lg">
+      <Card className="">
         <CardHeader><CardTitle className="text-base flex items-center gap-2"><Mail className="h-4 w-4 text-indigo-600" /> Officer Contact</CardTitle></CardHeader>
         <CardContent className="grid sm:grid-cols-2 gap-3">
           <div className="p-3 bg-slate-50 rounded-xl flex items-center gap-3"><Mail className="h-4 w-4 text-slate-400" /><div><div className="text-xs text-slate-400">Email</div><div className="text-sm font-medium">{user?.email}</div></div></div>

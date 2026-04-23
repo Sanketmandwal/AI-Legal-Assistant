@@ -28,7 +28,7 @@ export default function LawyerRecommendations() {
     <div className="max-w-4xl mx-auto space-y-6">
       <Button variant="ghost" size="sm" onClick={() => navigate(-1)} className="-ml-2 text-slate-500"><ArrowLeft className="mr-1.5 h-4 w-4" /> Back to FIR</Button>
 
-      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-emerald-600 via-green-600 to-teal-700 p-6 sm:p-8 text-white shadow-xl">
+      <div className="relative overflow-hidden rounded-2xl border border-border bg-card p-5 sm:p-7 shadow-sm">
         <div className="absolute top-0 right-0 w-64 h-64 bg-white/5 rounded-full -translate-y-1/2 translate-x-1/3" />
         <div className="relative z-10">
           <h1 className="text-2xl font-bold">Recommended Lawyers</h1>
@@ -45,7 +45,7 @@ export default function LawyerRecommendations() {
       ) : (
         <div className="grid sm:grid-cols-2 gap-4">
           {lawyers.map((lawyer) => (
-            <Card key={lawyer._id} className="border-0 shadow-lg hover:shadow-xl transition-all duration-300 overflow-hidden group">
+            <Card key={lawyer._id} className=" hover:border-primary/30 transition-all duration-300 overflow-hidden group">
               <CardContent className="p-0">
                 <div className="p-5">
                   <div className="flex items-start justify-between mb-3">
@@ -72,7 +72,7 @@ export default function LawyerRecommendations() {
 
                 <div className="border-t border-slate-100 px-5 py-3 bg-slate-50">
                   {lawyer.consultationStatus === 'not_requested' ? (
-                    <Button className="w-full bg-gradient-to-r from-emerald-600 to-green-600 shadow-md" size="sm" onClick={() => handleRequest(lawyer)} disabled={requestMutation.isPending}>
+                    <Button className="w-full  shadow-md" size="sm" onClick={() => handleRequest(lawyer)} disabled={requestMutation.isPending}>
                       {requestMutation.isPending ? <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" /> : <Send className="mr-1.5 h-3.5 w-3.5" />} Request Consultation
                     </Button>
                   ) : (

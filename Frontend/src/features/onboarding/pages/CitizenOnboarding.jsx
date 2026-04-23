@@ -98,8 +98,8 @@ export default function CitizenOnboarding() {
   const progress = ((step + 1) / steps.length) * 100
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50 flex items-center justify-center py-8 px-4">
-      <Card className="w-full max-w-lg border-0 shadow-xl">
+    <div className="flex min-h-screen items-center justify-center bg-background px-4 py-8">
+      <Card className="w-full max-w-lg">
         <CardHeader className="text-center pb-2">
           <div className="flex justify-center mb-3">
             <div className="h-10 w-10 bg-primary rounded-lg flex items-center justify-center">

@@ -22,7 +22,7 @@ export default function PoliceFIRsPage() {
 
   return (
     <div className="space-y-6">
-      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-rose-600 via-red-600 to-pink-700 p-6 sm:p-8 text-white shadow-xl">
+      <div className="relative overflow-hidden rounded-2xl border border-border bg-card p-5 sm:p-7 shadow-sm">
         <div className="absolute top-0 right-0 w-64 h-64 bg-white/5 rounded-full -translate-y-1/2 translate-x-1/3" />
         <div className="relative z-10"><h1 className="text-2xl font-bold">Assigned FIRs</h1><p className="text-rose-100 text-sm mt-1">All FIRs assigned to your police station</p></div>
       </div>
@@ -40,7 +40,7 @@ export default function PoliceFIRsPage() {
         <div className="space-y-3">
           {firs.map((fir) => (
             <Link key={fir._id} to={`/police/fir/${fir._id}`}>
-              <Card className="border-0 shadow-lg hover:shadow-xl hover:border-rose-200 transition-all cursor-pointer group">
+              <Card className=" hover:border-primary/30 hover:border-rose-200 transition-all cursor-pointer group">
                 <CardContent className="p-5">
                   <div className="flex items-start justify-between gap-3">
                     <div className="flex-1 min-w-0">

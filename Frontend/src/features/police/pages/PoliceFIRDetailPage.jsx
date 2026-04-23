@@ -42,7 +42,7 @@ export default function PoliceFIRDetailPage() {
     <div className="max-w-4xl mx-auto space-y-6">
       <Button variant="ghost" size="sm" onClick={() => navigate(-1)} className="-ml-2 text-slate-500"><ArrowLeft className="mr-1.5 h-4 w-4" /> Back</Button>
 
-      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-rose-600 via-red-600 to-pink-700 p-6 sm:p-8 text-white shadow-xl">
+      <div className="relative overflow-hidden rounded-2xl border border-border bg-card p-5 sm:p-7 shadow-sm">
         <div className="absolute top-0 right-0 w-64 h-64 bg-white/5 rounded-full -translate-y-1/2 translate-x-1/3" />
         <div className="relative z-10">
           <div className="flex flex-wrap items-start justify-between gap-4">
@@ -62,22 +62,22 @@ export default function PoliceFIRDetailPage() {
 
       {/* Action Bar */}
       {availableStatuses.length > 0 && (
-        <Card className="border-0 shadow-lg bg-gradient-to-r from-rose-50 to-orange-50">
+        <Card className=" bg-muted/50">
           <CardContent className="p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
             <div className="text-sm"><span className="font-semibold text-slate-800">Update Case Status:</span><span className="text-slate-500 ml-2">Move this FIR to the next stage</span></div>
-            <Button onClick={() => setStatusDialog(true)} className="bg-gradient-to-r from-rose-600 to-red-600"><ArrowRightLeft className="mr-1.5 h-4 w-4" /> Change Status</Button>
+            <Button onClick={() => setStatusDialog(true)} className=""><ArrowRightLeft className="mr-1.5 h-4 w-4" /> Change Status</Button>
           </CardContent>
         </Card>
       )}
 
       <div className="grid lg:grid-cols-3 gap-6">
         <div className="lg:col-span-2 space-y-6">
-          <Card className="border-0 shadow-lg"><CardHeader><CardTitle className="text-base flex items-center gap-2"><FileText className="h-4 w-4 text-blue-600" /> Description</CardTitle></CardHeader><CardContent><p className="text-sm text-slate-700 leading-relaxed whitespace-pre-wrap">{fir.incident?.description}</p></CardContent></Card>
-          <Card className="border-0 shadow-lg"><CardHeader><CardTitle className="text-base flex items-center gap-2"><Clock className="h-4 w-4 text-purple-600" /> Timeline</CardTitle></CardHeader><CardContent><TimelineView events={fir.timeline || []} /></CardContent></Card>
+          <Card className=""><CardHeader><CardTitle className="text-base flex items-center gap-2"><FileText className="h-4 w-4 text-blue-600" /> Description</CardTitle></CardHeader><CardContent><p className="text-sm text-slate-700 leading-relaxed whitespace-pre-wrap">{fir.incident?.description}</p></CardContent></Card>
+          <Card className=""><CardHeader><CardTitle className="text-base flex items-center gap-2"><Clock className="h-4 w-4 text-purple-600" /> Timeline</CardTitle></CardHeader><CardContent><TimelineView events={fir.timeline || []} /></CardContent></Card>
         </div>
         <div className="space-y-6">
-          <Card className="border-0 shadow-lg"><CardHeader className="pb-2"><CardTitle className="text-sm flex items-center gap-2"><User className="h-4 w-4 text-blue-600" /> Complainant</CardTitle></CardHeader><CardContent><div className="p-3 bg-slate-50 rounded-xl text-sm"><div className="font-medium">{fir.citizenId?.name}</div><div className="text-slate-500">{fir.citizenId?.email}</div><div className="text-slate-500">{fir.citizenId?.phone}</div></div></CardContent></Card>
-          <Card className="border-0 shadow-lg"><CardHeader className="pb-2"><CardTitle className="text-sm flex items-center gap-2"><Shield className="h-4 w-4 text-rose-600" /> Station</CardTitle></CardHeader><CardContent><div className="p-3 bg-slate-50 rounded-xl text-sm"><div className="font-medium">{fir.stationId?.stationName}</div><div className="text-slate-500">{fir.stationId?.stationAddress || fir.stationId?.district}</div></div></CardContent></Card>
+          <Card className=""><CardHeader className="pb-2"><CardTitle className="text-sm flex items-center gap-2"><User className="h-4 w-4 text-blue-600" /> Complainant</CardTitle></CardHeader><CardContent><div className="p-3 bg-slate-50 rounded-xl text-sm"><div className="font-medium">{fir.citizenId?.name}</div><div className="text-slate-500">{fir.citizenId?.email}</div><div className="text-slate-500">{fir.citizenId?.phone}</div></div></CardContent></Card>
+          <Card className=""><CardHeader className="pb-2"><CardTitle className="text-sm flex items-center gap-2"><Shield className="h-4 w-4 text-rose-600" /> Station</CardTitle></CardHeader><CardContent><div className="p-3 bg-slate-50 rounded-xl text-sm"><div className="font-medium">{fir.stationId?.stationName}</div><div className="text-slate-500">{fir.stationId?.stationAddress || fir.stationId?.district}</div></div></CardContent></Card>
         </div>
       </div>
 
@@ -93,7 +93,7 @@ export default function PoliceFIRDetailPage() {
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setStatusDialog(false)}>Cancel</Button>
-            <Button onClick={handleUpdateStatus} disabled={!newStatus || updateMutation.isPending} className="bg-gradient-to-r from-rose-600 to-red-600">
+            <Button onClick={handleUpdateStatus} disabled={!newStatus || updateMutation.isPending} className="">
               {updateMutation.isPending ? <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" /> : null} Update Status
             </Button>
           </DialogFooter>

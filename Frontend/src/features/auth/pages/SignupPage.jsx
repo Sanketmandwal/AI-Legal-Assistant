@@ -28,22 +28,22 @@ const ROLES = [
     value: 'citizen',
     label: 'Citizen',
     description: 'File FIRs and get legal help',
-    color: 'border-blue-500 bg-blue-50 text-blue-800',
-    active: 'ring-2 ring-blue-500',
+    color: 'border-primary bg-primary/5 text-primary',
+    active: 'ring-3 ring-primary/10',
   },
   {
     value: 'lawyer',
     label: 'Lawyer',
     description: 'Offer legal consultations',
-    color: 'border-emerald-500 bg-emerald-50 text-emerald-800',
-    active: 'ring-2 ring-emerald-500',
+    color: 'border-primary bg-primary/5 text-primary',
+    active: 'ring-3 ring-primary/10',
   },
   {
     value: 'police',
     label: 'Police',
     description: 'Manage FIR cases',
-    color: 'border-rose-500 bg-rose-50 text-rose-800',
-    active: 'ring-2 ring-rose-500',
+    color: 'border-primary bg-primary/5 text-primary',
+    active: 'ring-3 ring-primary/10',
   },
 ]
 
@@ -70,11 +70,11 @@ export default function SignupPage() {
 
   return (
     <PublicLayout>
-      <div className="min-h-[calc(100vh-8rem)] flex items-center justify-center py-12 px-4">
-        <Card className="w-full max-w-lg border-0 shadow-xl">
+      <div className="flex min-h-[calc(100vh-8rem)] items-center justify-center px-4 py-12">
+        <Card className="w-full max-w-lg">
           <CardHeader className="text-center pb-4">
             <div className="flex justify-center mb-4">
-              <div className="h-12 w-12 bg-primary rounded-xl flex items-center justify-center">
+              <div className="flex size-12 items-center justify-center rounded-xl bg-primary text-primary-foreground shadow-sm shadow-primary/20">
                 <Scale className="h-6 w-6 text-white" />
               </div>
             </div>
@@ -93,7 +93,7 @@ export default function SignupPage() {
                       key={role.value}
                       type="button"
                       onClick={() => setValue('role', role.value)}
-                      className={`relative p-3 rounded-xl border-2 text-center transition-all duration-200 cursor-pointer ${
+                    className={`relative cursor-pointer rounded-xl border p-3 text-center transition-colors ${
                         selectedRole === role.value
                           ? `${role.color} ${role.active}`
                           : 'border-slate-200 bg-white hover:border-slate-300'

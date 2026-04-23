@@ -23,9 +23,9 @@ function RoomsList({ rooms, activeRoomId, role }) {
         const isActive = room._id === activeRoomId
         return (
           <Link key={room._id} to={`${basePath}/${room._id}`}>
-            <div className={`p-3 rounded-xl transition-all cursor-pointer ${isActive ? 'bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 shadow-sm' : 'hover:bg-slate-50'}`}>
+            <div className={`rounded-xl border p-3 transition-colors ${isActive ? 'border-primary/30 bg-primary/5' : 'border-transparent hover:border-border hover:bg-muted/50'}`}>
               <div className="flex items-center gap-3">
-                <div className="h-10 w-10 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-white text-sm font-bold shrink-0">{otherUser?.name?.[0] || '?'}</div>
+                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-primary/10 text-sm font-bold text-primary">{otherUser?.name?.[0] || '?'}</div>
                 <div className="flex-1 min-w-0">
                   <div className="flex justify-between items-center mb-0.5">
                     <div className="font-semibold text-sm text-slate-900 truncate">{otherUser?.name || 'User'}</div>
@@ -49,7 +49,7 @@ function MessageBubble({ msg, isMe }) {
   return (
     <div className={`flex ${isMe ? 'justify-end' : 'justify-start'} mb-3`}>
       <div className={`max-w-[75%] ${isMe ? 'order-2' : ''}`}>
-        <div className={`px-4 py-2.5 rounded-2xl text-sm ${isMe ? 'bg-gradient-to-br from-blue-600 to-indigo-600 text-white rounded-br-md' : 'bg-white shadow-sm border border-slate-100 text-slate-800 rounded-bl-md'}`}>
+        <div className={`rounded-2xl px-4 py-2.5 text-sm ${isMe ? 'rounded-br-md bg-primary text-primary-foreground' : 'rounded-bl-md border border-border bg-card text-foreground shadow-sm shadow-slate-950/5'}`}>
           {!isMe && <div className="text-xs font-semibold mb-1 text-blue-600">{msg.senderId?.name}</div>}
           {msg.text && <p className="leading-relaxed whitespace-pre-wrap">{msg.text}</p>}
           {msg.attachments?.length > 0 && (
@@ -96,11 +96,11 @@ export default function ChatPage() {
   const handleKeyDown = (e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSend() } }
 
   return (
-    <div className="flex h-[calc(100vh-12rem)] rounded-2xl overflow-hidden shadow-xl border border-slate-200 bg-white">
+    <div className="mx-auto flex h-[calc(100vh-12rem)] max-w-7xl overflow-hidden rounded-2xl border border-border bg-card shadow-sm shadow-slate-950/5">
       {/* Sidebar */}
-      <div className={`w-80 border-r border-slate-200 flex flex-col bg-white ${roomId ? 'hidden lg:flex' : 'flex w-full lg:w-80'}`}>
-        <div className="p-4 border-b border-slate-100">
-          <h2 className="font-bold text-slate-900 flex items-center gap-2"><MessageSquare className="h-5 w-5 text-blue-600" /> Chats</h2>
+      <div className={`w-80 border-r border-border flex flex-col bg-card ${roomId ? 'hidden lg:flex' : 'flex w-full lg:w-80'}`}>
+        <div className="border-b border-border p-4">
+          <h2 className="flex items-center gap-2 font-semibold text-foreground"><MessageSquare className="h-5 w-5 text-primary" /> Chats</h2>
         </div>
         <div className="flex-1 overflow-y-auto p-3">
           {roomsLoading ? <div className="space-y-3">{[1,2,3].map(i => <Skeleton key={i} className="h-16 rounded-xl" />)}</div> : rooms.length === 0 ? (
@@ -116,17 +116,17 @@ export default function ChatPage() {
         ) : (
           <>
             {/* Chat Header */}
-            <div className="p-4 border-b border-slate-100 flex items-center gap-3 bg-gradient-to-r from-slate-50 to-blue-50">
+            <div className="flex items-center gap-3 border-b border-border bg-card p-4">
               <Button variant="ghost" size="sm" className="lg:hidden" asChild><Link to={`/${user?.role}/chat`}><ArrowLeft className="h-4 w-4" /></Link></Button>
               {room && (<>
-                <div className="h-9 w-9 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-white text-sm font-bold">{(user?.role === 'citizen' ? room.lawyerUserId?.name : room.citizenId?.name)?.[0] || '?'}</div>
+                <div className="flex h-9 w-9 items-center justify-center rounded-full bg-primary/10 text-sm font-bold text-primary">{(user?.role === 'citizen' ? room.lawyerUserId?.name : room.citizenId?.name)?.[0] || '?'}</div>
                 <div className="flex-1 min-w-0"><div className="font-semibold text-sm truncate">{user?.role === 'citizen' ? room.lawyerUserId?.name : room.citizenId?.name}</div><div className="text-xs text-slate-500 truncate flex items-center gap-1"><FileText className="h-3 w-3" />{room.firId?.incident?.title}</div></div>
                 <Badge variant={room.status === 'active' ? 'default' : 'secondary'} className="text-xs">{room.status}</Badge>
               </>)}
             </div>
 
             {/* Messages */}
-            <div className="flex-1 overflow-y-auto p-4 bg-gradient-to-b from-slate-50 to-white">
+            <div className="flex-1 overflow-y-auto bg-muted/35 p-4">
               {msgsLoading ? <div className="space-y-3">{[1,2,3].map(i => <Skeleton key={i} className="h-12 w-48 rounded-xl" />)}</div> : messages.length === 0 ? (
                 <div className="text-center text-sm text-slate-400 py-10">No messages yet. Start the conversation!</div>
               ) : messages.map((msg) => <MessageBubble key={msg._id} msg={msg} isMe={String(msg.senderId?._id) === String(user?._id)} />)}
@@ -141,7 +141,7 @@ export default function ChatPage() {
                   <input type="file" ref={fileInputRef} multiple className="hidden" onChange={(e) => setFiles(prev => [...prev, ...Array.from(e.target.files)])} />
                   <Button variant="ghost" size="sm" onClick={() => fileInputRef.current?.click()}><Paperclip className="h-4 w-4" /></Button>
                   <Input placeholder="Type a message..." value={text} onChange={(e) => setText(e.target.value)} onKeyDown={handleKeyDown} className="flex-1" />
-                  <Button size="sm" onClick={handleSend} disabled={(!text.trim() && !files.length) || sendMutation.isPending} className="bg-gradient-to-r from-blue-600 to-indigo-600">
+                  <Button size="sm" onClick={handleSend} disabled={(!text.trim() && !files.length) || sendMutation.isPending}>
                     {sendMutation.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
                   </Button>
                 </div>

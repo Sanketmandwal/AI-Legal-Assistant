@@ -21,7 +21,7 @@ export default function LawyerReviewsPage() {
 
   return (
     <div className="max-w-3xl mx-auto space-y-6">
-      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-yellow-500 via-amber-500 to-orange-600 p-6 sm:p-8 text-white shadow-xl">
+      <div className="relative overflow-hidden rounded-2xl border border-border bg-card p-5 sm:p-7 shadow-sm">
         <div className="absolute top-0 right-0 w-64 h-64 bg-white/5 rounded-full -translate-y-1/2 translate-x-1/3" />
         <div className="relative z-10">
           <h1 className="text-2xl font-bold">My Reviews</h1>
@@ -37,11 +37,11 @@ export default function LawyerReviewsPage() {
       ) : (
         <div className="space-y-3">
           {reviews.map((r) => (
-            <Card key={r._id} className="border-0 shadow-lg hover:shadow-xl transition-all">
+            <Card key={r._id} className=" hover:border-primary/30 transition-all">
               <CardContent className="p-5">
                 <div className="flex items-start justify-between gap-3">
                   <div className="flex items-center gap-3">
-                    <div className="h-10 w-10 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-white text-sm font-bold shrink-0">{r.citizenId?.name?.[0] || <User className="h-4 w-4" />}</div>
+                    <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center text-primary text-sm font-bold shrink-0">{r.citizenId?.name?.[0] || <User className="h-4 w-4" />}</div>
                     <div><div className="font-semibold text-slate-900 text-sm">{r.citizenId?.name || 'Anonymous'}</div><div className="text-xs text-slate-400">{formatDate(r.createdAt)}</div></div>
                   </div>
                   <StarRating value={r.rating} readonly size="sm" />

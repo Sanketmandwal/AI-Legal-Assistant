@@ -19,7 +19,7 @@ export default function LawyerProfilePage() {
 
   return (
     <div className="max-w-3xl mx-auto space-y-6">
-      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-emerald-600 via-green-600 to-teal-700 p-6 sm:p-8 shadow-xl">
+      <div className="relative overflow-hidden rounded-2xl border border-border bg-card p-5 sm:p-7 shadow-sm">
         <div className="absolute top-0 right-0 w-64 h-64 bg-white/5 rounded-full -translate-y-1/2 translate-x-1/3" />
         <div className="absolute bottom-0 left-0 w-48 h-48 bg-white/5 rounded-full translate-y-1/2 -translate-x-1/4" />
         <div className="relative z-10 flex items-center gap-5">
@@ -37,7 +37,7 @@ export default function LawyerProfilePage() {
       </div>
 
       <div className="grid sm:grid-cols-2 gap-6">
-        <Card className="border-0 shadow-lg">
+        <Card className="">
           <CardHeader><CardTitle className="text-base flex items-center gap-2"><Briefcase className="h-4 w-4 text-blue-600" /> Professional Info</CardTitle></CardHeader>
           <CardContent className="space-y-3">
             <div className="p-3 bg-slate-50 rounded-xl"><div className="text-xs text-slate-400">Bar Council ID</div><div className="text-sm font-mono font-medium">{profile?.barId || 'N/A'}</div></div>
@@ -46,7 +46,7 @@ export default function LawyerProfilePage() {
           </CardContent>
         </Card>
 
-        <Card className="border-0 shadow-lg">
+        <Card className="">
           <CardHeader><CardTitle className="text-base flex items-center gap-2"><Mail className="h-4 w-4 text-indigo-600" /> Contact Info</CardTitle></CardHeader>
           <CardContent className="space-y-3">
             <div className="p-3 bg-slate-50 rounded-xl flex items-center gap-3"><Mail className="h-4 w-4 text-slate-400" /><div><div className="text-xs text-slate-400">Email</div><div className="text-sm font-medium">{user?.email}</div></div></div>
@@ -56,7 +56,7 @@ export default function LawyerProfilePage() {
         </Card>
       </div>
 
-      <Card className="border-0 shadow-lg">
+      <Card className="">
         <CardHeader><CardTitle className="text-base flex items-center gap-2"><Award className="h-4 w-4 text-purple-600" /> Specializations & Languages</CardTitle></CardHeader>
         <CardContent>
           <div className="space-y-3">

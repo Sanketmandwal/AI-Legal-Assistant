@@ -58,10 +58,10 @@ export default function PoliceOnboarding() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-rose-50 flex items-center justify-center py-8 px-4">
-      <Card className="w-full max-w-lg border-0 shadow-xl">
+    <div className="flex min-h-screen items-center justify-center bg-background px-4 py-8">
+      <Card className="w-full max-w-lg">
         <CardHeader className="text-center pb-2">
-          <div className="flex justify-center mb-3"><div className="h-10 w-10 bg-rose-600 rounded-lg flex items-center justify-center"><Scale className="h-5 w-5 text-white" /></div></div>
+          <div className="mb-3 flex justify-center"><div className="flex size-10 items-center justify-center rounded-lg bg-primary text-primary-foreground"><Scale className="h-5 w-5" /></div></div>
           <CardTitle className="text-xl">Police Station Profile</CardTitle>
           <CardDescription>Step {step + 1} of {steps.length} — {steps[step].label}</CardDescription>
           <Progress value={((step + 1) / steps.length) * 100} className="mt-3 h-1.5" />

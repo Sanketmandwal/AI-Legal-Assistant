@@ -30,7 +30,7 @@ export default function VerifyOtpPage() {
   return (
     <PublicLayout>
       <div className="min-h-[calc(100vh-8rem)] flex items-center justify-center py-12 px-4">
-        <Card className="w-full max-w-lg border-0 shadow-xl">
+        <Card className="w-full max-w-lg ">
           <CardHeader className="text-center pb-4">
             <div className="flex justify-center mb-4">
               <div className="h-12 w-12 bg-emerald-100 rounded-xl flex items-center justify-center">

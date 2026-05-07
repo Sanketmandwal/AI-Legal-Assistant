@@ -1,0 +1,21 @@
+# Core
+fastapi==0.111.0
+uvicorn==0.29.0
+python-dotenv==1.0.1
+pydantic==2.7.1
+
+# PDF Extraction
+pdfplumber==0.11.0        # primary: best for structured legal PDFs
+pymupdf==1.24.3           # fallback: fitz, handles complex layouts
+pdfminer.six==20231228    # fallback level 2
+
+# Embeddings + Vector Store
+sentence-transformers==3.0.1
+faiss-cpu==1.8.0
+numpy==1.26.4
+
+# LLM
+groq==0.9.0
+
+# Data processing
+tiktoken==0.7.0

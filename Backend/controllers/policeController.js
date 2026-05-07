@@ -94,3 +94,48 @@ export const getPoliceProfile = async (req, res) => {
     res.status(500).json({ success: false, message: error.message });
   }
 };
+
+export const updatePoliceProfile = async (req, res) => {
+  try {
+    const user = req.user;
+    if (user.role !== "police") {
+      return res.status(403).json({ success: false, message: "Police access only" });
+    }
+
+    const { name, phone, stationAddress, jurisdictionRadius } = req.body;
+
+    // Update User model
+    let userUpdated = false;
+    if (name && name !== user.name) {
+      user.name = name;
+      userUpdated = true;
+    }
+    if (phone && phone !== user.phone) {
+      user.phone = phone;
+      userUpdated = true;
+    }
+    if (userUpdated) {
+      await user.save();
+    }
+
+    // Update PoliceProfile model
+    const profile = await PoliceProfile.findOne({ userId: user._id });
+    if (!profile) {
+      return res.status(404).json({ success: false, message: "Profile not found" });
+    }
+
+    if (stationAddress !== undefined) profile.stationAddress = stationAddress;
+    if (jurisdictionRadius !== undefined) profile.jurisdictionRadius = Number(jurisdictionRadius);
+
+    await profile.save();
+
+    res.json({
+      success: true,
+      message: "Profile updated successfully",
+      profile,
+    });
+  } catch (error) {
+    console.error("updatePoliceProfile error:", error);
+    res.status(500).json({ success: false, message: "Server error" });
+  }
+};

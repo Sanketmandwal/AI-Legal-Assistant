@@ -2,8 +2,10 @@
 import { useState } from 'react'
 import { Link, NavLink, useNavigate } from 'react-router-dom'
 import { useSelector, useDispatch } from 'react-redux'
+import { useTranslation } from 'react-i18next'
 import { logout } from '@/features/auth/slices/authSlice'
 import { useMyChatRooms } from '@/features/chat/api/chatApi'
+import LanguageSwitcher from '@/components/common/LanguageSwitcher'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
@@ -52,12 +54,13 @@ export default function DashboardNavbar() {
   const { user } = useSelector((state) => state.auth)
   const dispatch = useDispatch()
   const navigate = useNavigate()
-
-  const { data: chatRoomsData } = useMyChatRooms()
-  const totalUnread = (chatRoomsData?.rooms || []).reduce((sum, room) => sum + (room.unreadCount || 0), 0)
+  const { t } = useTranslation()
 
   const role = user?.role || 'citizen'
   const navItems = NAV_ITEMS[role] || []
+
+  const { data: chatRoomsData } = useMyChatRooms({ enabled: ['citizen', 'lawyer'].includes(role) })
+  const totalUnread = (chatRoomsData?.rooms || []).reduce((sum, room) => sum + (room.unreadCount || 0), 0)
   const initials = user?.name ? user.name.split(' ').map((n) => n[0]).join('').toUpperCase().slice(0, 2) : '?'
 
   const handleLogout = () => {
@@ -110,6 +113,8 @@ export default function DashboardNavbar() {
 
           {/* Right side: Role badge + Avatar Dropdown */}
           <div className="flex items-center gap-3">
+            <LanguageSwitcher />
+            
             <Badge variant="outline" className="hidden px-2.5 py-0.5 text-[11px] font-semibold capitalize sm:inline-flex">
               {role}
             </Badge>
@@ -146,16 +151,16 @@ export default function DashboardNavbar() {
                 <DropdownMenuSeparator />
                 <DropdownMenuItem onClick={() => navigate(profilePath)} className="cursor-pointer rounded-lg py-2.5">
                   <User className="mr-2.5 h-4 w-4 text-muted-foreground" />
-                  <span className="font-medium">My Profile</span>
+                  <span className="font-medium">{t('dashboard.myProfile')}</span>
                 </DropdownMenuItem>
                 <DropdownMenuItem onClick={() => navigate('/dashboard')} className="cursor-pointer rounded-lg py-2.5">
                   <LayoutDashboard className="mr-2.5 h-4 w-4 text-muted-foreground" />
-                  <span className="font-medium">Dashboard</span>
+                  <span className="font-medium">{t('nav.dashboard')}</span>
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem onClick={handleLogout} className="cursor-pointer rounded-lg py-2.5 text-destructive focus:bg-destructive/10 focus:text-destructive">
                   <LogOut className="mr-2.5 h-4 w-4" />
-                  <span className="font-medium">Log Out</span>
+                  <span className="font-medium">{t('nav.logout')}</span>
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
@@ -195,7 +200,7 @@ export default function DashboardNavbar() {
                     className={({ isActive }) => `flex items-center gap-3 rounded-xl px-3 py-3 text-sm font-semibold transition-colors ${isActive ? 'bg-primary text-primary-foreground' : 'text-muted-foreground hover:bg-muted hover:text-foreground'}`}
                   >
                     <User className="h-5 w-5" />
-                    My Profile
+                    {t('dashboard.myProfile')}
                   </NavLink>
 
                   <div className="mt-3 border-t border-border pt-3">
@@ -203,7 +208,7 @@ export default function DashboardNavbar() {
                       className="flex w-full items-center gap-3 rounded-xl px-3 py-3 text-sm font-semibold text-destructive transition-colors hover:bg-destructive/10"
                     >
                       <LogOut className="h-5 w-5" />
-                      Log Out
+                      {t('nav.logout')}
                     </button>
                   </div>
                 </div>

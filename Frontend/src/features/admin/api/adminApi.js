@@ -25,3 +25,7 @@ export function useRejectPolice() {
 export function useUserDocuments(userId) {
   return useQuery({ queryKey: ['userDocs', userId], queryFn: async () => { const { data } = await axiosClient.get(`/admin/users/${userId}/documents`); return data }, enabled: !!userId })
 }
+
+export function useVerificationHistory() {
+  return useQuery({ queryKey: ['verificationHistory'], queryFn: async () => { const { data } = await axiosClient.get('/admin/verification-history'); return data } })
+}

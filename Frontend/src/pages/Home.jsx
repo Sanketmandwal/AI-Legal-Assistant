@@ -1,5 +1,7 @@
 import { useEffect, useRef } from "react";
 import { Link } from "react-router-dom";
+import { useSelector } from "react-redux";
+import { useTranslation } from "react-i18next";
 import * as THREE from "three";
 import {
   Scale, Shield, FileText, MessageSquare, Users,
@@ -193,6 +195,10 @@ const trust = [
 
 /* ── PAGE ── */
 export default function Home() {
+  const { user, token } = useSelector((s) => s.auth)
+  const { t } = useTranslation()
+  const isLoggedIn = !!(token && user)
+
   return (
     <PublicLayout>
 
@@ -224,48 +230,70 @@ export default function Home() {
             {/* eyebrow */}
             <div className="inline-flex items-center gap-2 bg-teal-50 border border-teal-200 text-teal-700 text-sm font-medium px-4 py-1.5 rounded-full mb-8">
               <Zap size={14} className="text-teal-500" />
-              AI-Powered Legal Platform for India
+              {t('home.eyebrow')}
             </div>
 
             {/* headline */}
             <h1 className="text-5xl lg:text-[4.25rem] font-bold text-slate-900 leading-[1.1] tracking-tight mb-6">
-              Justice should be{" "}
-              <span className="text-teal-600">accessible</span>{" "}
-              to every Indian citizen
+              {t('home.heroTitle').split(' ').map((word, i, arr) => {
+                // Just a heuristic: make the middle word teal, or "accessible" in English
+                if (word.toLowerCase().includes('accessible') || word === 'पहुंच' || word === 'आवाक्यात') {
+                  return <span key={i} className="text-teal-600">{word} </span>
+                }
+                return word + ' '
+              })}
             </h1>
 
             {/* sub */}
             <p className="text-xl text-slate-500 leading-relaxed max-w-xl mb-10">
-              File FIRs with AI assistance, connect with verified lawyers, track
-              your case, and communicate securely — all in one trusted platform.
+              {t('home.heroSub')}
             </p>
 
             {/* CTAs */}
             <div className="flex flex-wrap gap-4 mb-14">
-              <Link
-                to="/signup"
-                className="inline-flex items-center gap-2 bg-teal-600 hover:bg-teal-700 active:bg-teal-800 text-white font-semibold px-7 py-3.5 rounded-xl transition-all duration-200 shadow-lg shadow-teal-600/20 hover:-translate-y-0.5"
-              >
-                Get Started Free <ArrowRight size={17} />
-              </Link>
-              <Link
-                to="/login"
-                className="inline-flex items-center gap-2 bg-white hover:bg-slate-50 text-slate-700 font-semibold px-7 py-3.5 rounded-xl border border-slate-200 hover:border-slate-300 transition-all duration-200 hover:-translate-y-0.5"
-              >
-                Sign In <ChevronRight size={17} />
-              </Link>
+              {isLoggedIn ? (
+                <>
+                  <Link
+                    to="/dashboard"
+                    className="inline-flex items-center gap-2 bg-teal-600 hover:bg-teal-700 active:bg-teal-800 text-white font-semibold px-7 py-3.5 rounded-xl transition-all duration-200 shadow-lg shadow-teal-600/20 hover:-translate-y-0.5"
+                  >
+                    {t('home.goToDashboard')} <ArrowRight size={17} />
+                  </Link>
+                  <Link
+                    to={`/${user?.role}/profile`}
+                    className="inline-flex items-center gap-2 bg-white hover:bg-slate-50 text-slate-700 font-semibold px-7 py-3.5 rounded-xl border border-slate-200 hover:border-slate-300 transition-all duration-200 hover:-translate-y-0.5"
+                  >
+                    {t('home.viewProfile')} <ChevronRight size={17} />
+                  </Link>
+                </>
+              ) : (
+                <>
+                  <Link
+                    to="/signup"
+                    className="inline-flex items-center gap-2 bg-teal-600 hover:bg-teal-700 active:bg-teal-800 text-white font-semibold px-7 py-3.5 rounded-xl transition-all duration-200 shadow-lg shadow-teal-600/20 hover:-translate-y-0.5"
+                  >
+                    {t('home.getStartedFree')} <ArrowRight size={17} />
+                  </Link>
+                  <Link
+                    to="/login"
+                    className="inline-flex items-center gap-2 bg-white hover:bg-slate-50 text-slate-700 font-semibold px-7 py-3.5 rounded-xl border border-slate-200 hover:border-slate-300 transition-all duration-200 hover:-translate-y-0.5"
+                  >
+                    {t('home.signIn')} <ChevronRight size={17} />
+                  </Link>
+                </>
+              )}
             </div>
 
             {/* trust pills */}
             <div className="flex flex-wrap gap-x-6 gap-y-3 text-sm text-slate-500">
               {[
-                "No legal knowledge required",
-                "Available in Hindi & regional languages",
-                "Trusted by 50,000+ citizens",
-              ].map((t) => (
-                <span key={t} className="flex items-center gap-1.5">
+                t('home.trustPill1'),
+                t('home.trustPill2'),
+                t('home.trustPill3'),
+              ].map((pillText) => (
+                <span key={pillText} className="flex items-center gap-1.5">
                   <CheckCircle size={14} className="text-teal-500" />
-                  {t}
+                  {pillText}
                 </span>
               ))}
             </div>

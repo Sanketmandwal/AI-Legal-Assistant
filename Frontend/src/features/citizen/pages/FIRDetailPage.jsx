@@ -8,6 +8,7 @@ import { Skeleton } from '@/components/ui/skeleton'
 import StatusBadge from '@/components/shared/StatusBadge'
 import TimelineView from '@/components/shared/TimelineView'
 import FileUpload from '@/components/shared/FileUpload'
+import DocumentPreviewModal, { friendlyDocName } from '@/components/shared/DocumentPreviewModal'
 import { useState } from 'react'
 import { ArrowLeft, MapPin, Calendar, FileText, Shield, Upload, Users, Clock, Loader2, Image, ExternalLink, File, Video, Eye } from 'lucide-react'
 
@@ -16,42 +17,69 @@ function formatDate(d) { return new Date(d).toLocaleDateString('en-IN', { day: '
 const RESOURCE_ICONS = { image: Image, video: Video, raw: File }
 
 function EvidenceGallery({ timeline }) {
+  const [previewDoc, setPreviewDoc] = useState(null)
   const evidenceEvents = (timeline || []).filter(e => e.type === 'evidence_added' && e.attachments?.length > 0)
   const allFiles = evidenceEvents.flatMap(e => e.attachments.map(a => ({ ...a, uploadedBy: e.byUserId?.name || e.byRole, date: e.createdAt })))
 
   if (!allFiles.length) return <p className="text-sm text-slate-500 text-center py-4">No evidence files uploaded yet.</p>
 
+  const previewDocs = allFiles.map((file, i) => ({
+    url: file.signedUrl || file.url,
+    publicId: file.publicId,
+    filename: file.filename,
+    resourceType: file.resourceType,
+  }))
+
+  const handlePreview = (index) => {
+    setPreviewDoc({ docs: previewDocs, index })
+  }
+
   return (
-    <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-      {allFiles.map((file, i) => {
-        const ResIcon = RESOURCE_ICONS[file.resourceType] || File
-        const isImage = file.resourceType === 'image'
-        const url = file.signedUrl || file.url
-        return (
-          <div key={i} className="group rounded-xl border border-slate-200 bg-white overflow-hidden hover:border-primary/30 transition-all">
-            {isImage && url ? (
-              <div className="relative"><img src={url} alt={file.filename} className="w-full h-32 object-cover" loading="lazy" />
-                <div className="absolute inset-0 bg-black/0 group-hover:bg-black/40 transition-all flex items-center justify-center opacity-0 group-hover:opacity-100">
-                  <a href={url} target="_blank" rel="noopener noreferrer"><Button size="sm" variant="secondary" ><Eye className="mr-1.5 h-3.5 w-3.5" /> View Full</Button></a>
+    <>
+      <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+        {allFiles.map((file, i) => {
+          const ResIcon = RESOURCE_ICONS[file.resourceType] || File
+          const isImage = file.resourceType === 'image'
+          const url = file.signedUrl || file.url
+          const displayName = friendlyDocName(file.publicId, file.filename, i)
+          return (
+            <div key={i} className="group rounded-xl border border-slate-200 bg-white overflow-hidden hover:border-primary/30 transition-all cursor-pointer" onClick={() => handlePreview(i)}>
+              {isImage && url ? (
+                <div className="relative"><img src={url} alt={displayName} className="w-full h-32 object-cover" loading="lazy" />
+                  <div className="absolute inset-0 bg-black/0 group-hover:bg-black/40 transition-all flex items-center justify-center opacity-0 group-hover:opacity-100">
+                    <Button size="sm" variant="secondary"><Eye className="mr-1.5 h-3.5 w-3.5" /> Preview</Button>
+                  </div>
+                </div>
+              ) : (
+                <div className="h-32 flex flex-col items-center justify-center bg-slate-50">
+                  <ResIcon className="h-8 w-8 text-slate-300" />
+                  <span className="text-[10px] text-slate-400 capitalize mt-1">{file.resourceType}</span>
+                </div>
+              )}
+              <div className="p-2.5">
+                <div className="text-xs font-medium text-slate-800 truncate">{displayName}</div>
+                <div className="flex items-center justify-between mt-1">
+                  <span className="text-[10px] text-slate-400">by {file.uploadedBy}</span>
+                  <div className="shrink-0 opacity-0 group-hover:opacity-100 transition-opacity">
+                    <div className="h-5 w-5 rounded bg-primary/10 flex items-center justify-center">
+                      <Eye className="h-3 w-3 text-primary" />
+                    </div>
+                  </div>
                 </div>
               </div>
-            ) : (
-              <div className="h-32 flex flex-col items-center justify-center bg-slate-50">
-                <ResIcon className="h-8 w-8 text-slate-300" />
-                <span className="text-[10px] text-slate-400 capitalize mt-1">{file.resourceType}</span>
-              </div>
-            )}
-            <div className="p-2.5">
-              <div className="text-xs font-medium text-slate-800 truncate">{file.filename}</div>
-              <div className="flex items-center justify-between mt-1">
-                <span className="text-[10px] text-slate-400">by {file.uploadedBy}</span>
-                {url && <a href={url} target="_blank" rel="noopener noreferrer" className="text-blue-500 hover:text-blue-700"><ExternalLink className="h-3.5 w-3.5" /></a>}
-              </div>
             </div>
-          </div>
-        )
-      })}
-    </div>
+          )
+        })}
+      </div>
+
+      <DocumentPreviewModal
+        open={!!previewDoc}
+        onClose={() => setPreviewDoc(null)}
+        documents={previewDoc?.docs || []}
+        initialIndex={previewDoc?.index || 0}
+        title="Evidence Preview"
+      />
+    </>
   )
 }
 

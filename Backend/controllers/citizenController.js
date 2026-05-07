@@ -113,3 +113,55 @@ export const getCitizenProfile = async (req, res) => {
     });
   }
 };
+
+export const updateCitizenProfile = async (req, res) => {
+  try {
+    const user = req.user;
+    if (user.role !== "citizen") {
+      return res.status(403).json({ success: false, message: "Citizen access only" });
+    }
+
+    const { name, phone, gender, dob, address, emergencyContact } = req.body;
+
+    // Update User model
+    let userUpdated = false;
+    if (name && name !== user.name) {
+      user.name = name;
+      userUpdated = true;
+    }
+    if (phone && phone !== user.phone) {
+      user.phone = phone;
+      userUpdated = true;
+      // In a real app, you might want to reset phone verification here
+    }
+    if (userUpdated) {
+      await user.save();
+    }
+
+    // Update CitizenProfile model
+    const profile = await CitizenProfile.findOne({ userId: user._id });
+    if (!profile) {
+      return res.status(404).json({ success: false, message: "Profile not found" });
+    }
+
+    if (gender) profile.gender = gender;
+    if (dob) profile.dob = dob;
+    if (address) {
+      profile.address = { ...profile.address, ...address };
+    }
+    if (emergencyContact) {
+      profile.emergencyContact = { ...profile.emergencyContact, ...emergencyContact };
+    }
+
+    await profile.save();
+
+    res.json({
+      success: true,
+      message: "Profile updated successfully",
+      profile,
+    });
+  } catch (error) {
+    console.error("updateCitizenProfile error:", error);
+    res.status(500).json({ success: false, message: "Server error" });
+  }
+};

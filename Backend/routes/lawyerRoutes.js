@@ -4,6 +4,7 @@ import {
   submitLawyerProfile,
   getLawyerProfile,
   getLawyerReviews,
+  updateLawyerProfile,
 } from "../controllers/lawyerController.js";
 import {
   createConsultationRequest,
@@ -88,5 +89,7 @@ router.get(
 
 
 router.get("/profile", authMiddleware, getLawyerProfile);
+
+router.patch("/profile", authMiddleware, requireRole(["lawyer"]), updateLawyerProfile);
 
 export default router;

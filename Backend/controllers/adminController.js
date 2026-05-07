@@ -143,3 +143,68 @@ export const listUserDocuments = async (req, res) => {
     res.status(500).json({ success: false, message: error.message });
   }
 };
+
+export const getVerificationHistory = async (req, res) => {
+  try {
+    const adminId = req.user._id;
+
+    const [lawyers, police] = await Promise.all([
+      LawyerProfile.find({ verificationStatus: "approved", verifiedBy: adminId })
+        .populate("userId", "name email phone role")
+        .select("-roleDocuments -aadharFile")
+        .sort({ verifiedAt: -1 }),
+      PoliceProfile.find({ verificationStatus: "approved", verifiedBy: adminId })
+        .populate("userId", "name email phone role")
+        .sort({ verifiedAt: -1 }),
+    ]);
+
+    res.json({
+      success: true,
+      lawyers,
+      police,
+      totalHistory: lawyers.length + police.length,
+    });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+export const updateAdminProfile = async (req, res) => {
+  try {
+    const user = req.user;
+    if (user.role !== "admin") {
+      return res.status(403).json({ success: false, message: "Admin access only" });
+    }
+
+    const { name, phone } = req.body;
+    let updated = false;
+
+    if (name && name !== user.name) {
+      user.name = name;
+      updated = true;
+    }
+    if (phone && phone !== user.phone) {
+      user.phone = phone;
+      updated = true;
+    }
+
+    if (updated) {
+      await user.save();
+    }
+
+    res.json({
+      success: true,
+      message: "Admin profile updated successfully",
+      user: {
+        id: user._id,
+        name: user.name,
+        email: user.email,
+        phone: user.phone,
+        role: user.role
+      }
+    });
+  } catch (error) {
+    console.error("updateAdminProfile error:", error);
+    res.status(500).json({ success: false, message: "Server error" });
+  }
+};

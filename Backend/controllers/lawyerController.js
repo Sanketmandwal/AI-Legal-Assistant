@@ -185,3 +185,62 @@ export const getLawyerProfile = async (req, res) => {
     res.status(500).json({ success: false, message: error.message });
   }
 };
+
+export const updateLawyerProfile = async (req, res) => {
+  try {
+    const user = req.user;
+    if (user.role !== "lawyer") {
+      return res.status(403).json({ success: false, message: "Lawyer access only" });
+    }
+
+    const { name, phone, bio, specialization, languages, feePerConsultation, experienceYears, city, state, availabilityStatus } = req.body;
+
+    // Update User model
+    let userUpdated = false;
+    if (name && name !== user.name) {
+      user.name = name;
+      userUpdated = true;
+    }
+    if (phone && phone !== user.phone) {
+      user.phone = phone;
+      userUpdated = true;
+    }
+    if (userUpdated) {
+      await user.save();
+    }
+
+    // Update LawyerProfile model
+    const profile = await LawyerProfile.findOne({ userId: user._id });
+    if (!profile) {
+      return res.status(404).json({ success: false, message: "Profile not found" });
+    }
+
+    if (bio !== undefined) profile.bio = bio;
+    if (specialization) {
+      profile.specialization = Array.isArray(specialization) 
+        ? specialization 
+        : specialization.split(",").map((s) => s.trim().toLowerCase());
+    }
+    if (languages) {
+      profile.languages = Array.isArray(languages)
+        ? languages
+        : languages.split(",").map((l) => l.trim().toLowerCase());
+    }
+    if (feePerConsultation !== undefined) profile.feePerConsultation = Number(feePerConsultation);
+    if (experienceYears !== undefined) profile.experienceYears = Number(experienceYears);
+    if (city !== undefined) profile.city = city;
+    if (state !== undefined) profile.state = state;
+    if (availabilityStatus !== undefined) profile.availabilityStatus = availabilityStatus;
+
+    await profile.save();
+
+    res.json({
+      success: true,
+      message: "Profile updated successfully",
+      profile,
+    });
+  } catch (error) {
+    console.error("updateLawyerProfile error:", error);
+    res.status(500).json({ success: false, message: "Server error" });
+  }
+};

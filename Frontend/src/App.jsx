@@ -4,6 +4,7 @@ import { BrowserRouter, Routes, Route } from 'react-router-dom'
 // Layouts & Guards
 import DashboardLayout from '@/components/common/DashboardLayout'
 import ProtectedRoute from '@/components/common/ProtectedRoute'
+import GuestRoute from '@/components/common/GuestRoute'
 import RoleRedirect from '@/components/common/RoleRedirect'
 
 // Public Pages
@@ -45,6 +46,7 @@ import PoliceProfilePage from '@/features/police/pages/PoliceProfilePage'
 // Admin Pages
 import AdminDashboard from '@/features/admin/pages/AdminDashboard'
 import VerificationPanel from '@/features/admin/pages/VerificationPanel'
+import AdminProfilePage from '@/features/admin/pages/AdminProfilePage'
 
 // Chat
 import ChatPage from '@/features/chat/pages/ChatPage'
@@ -55,8 +57,12 @@ export default function App() {
       <Routes>
         {/* ─── Public Routes ─── */}
         <Route path="/" element={<Home />} />
-        <Route path="/login" element={<LoginPage />} />
-        <Route path="/signup" element={<SignupPage />} />
+
+        {/* ─── Guest-only Routes (redirect to dashboard if logged in) ─── */}
+        <Route element={<GuestRoute />}>
+          <Route path="/login" element={<LoginPage />} />
+          <Route path="/signup" element={<SignupPage />} />
+        </Route>
         <Route path="/verify-otp" element={<VerifyOtpPage />} />
 
         {/* ─── Onboarding ─── */}
@@ -110,6 +116,7 @@ export default function App() {
           <Route element={<DashboardLayout />}>
             <Route path="/admin/dashboard" element={<AdminDashboard />} />
             <Route path="/admin/verifications" element={<VerificationPanel />} />
+            <Route path="/admin/profile" element={<AdminProfilePage />} />
           </Route>
         </Route>
 

@@ -1,0 +1,27 @@
+{
+  "nav": {
+    "dashboard": "Dashboard",
+    "login": "Login",
+    "getStarted": "Get Started",
+    "logout": "Logout"
+  },
+  "home": {
+    "heroTitle": "Justice should be accessible to every Indian citizen",
+    "heroSub": "File FIRs with AI assistance, connect with verified lawyers, track your case, and communicate securely — all in one trusted platform.",
+    "getStartedFree": "Get Started Free",
+    "signIn": "Sign In",
+    "goToDashboard": "Go to Dashboard",
+    "viewProfile": "View Profile",
+    "eyebrow": "AI-Powered Legal Platform for India",
+    "trustPill1": "No legal knowledge required",
+    "trustPill2": "Available in Hindi & regional languages",
+    "trustPill3": "Trusted by 50,000+ citizens"
+  },
+  "dashboard": {
+    "myProfile": "My Profile",
+    "fileFir": "File FIR",
+    "myCases": "My Cases",
+    "lawyers": "Find Lawyers",
+    "chat": "Messages"
+  }
+}

@@ -1,8 +1,23 @@
-import { Scale } from "lucide-react"
-import { Link } from "react-router-dom"
+import { Scale, LogOut, LayoutDashboard } from "lucide-react"
+import { Link, useNavigate } from "react-router-dom"
+import { useSelector, useDispatch } from "react-redux"
+import { useTranslation } from "react-i18next"
+import { logout } from "@/features/auth/slices/authSlice"
 import { Button } from "../ui/button"
+import LanguageSwitcher from "./LanguageSwitcher"
 
 export default function PublicLayout({ children }) {
+  const { user, token } = useSelector((state) => state.auth)
+  const dispatch = useDispatch()
+  const navigate = useNavigate()
+  const { t } = useTranslation()
+  const isLoggedIn = !!(token && user)
+
+  const handleLogout = () => {
+    dispatch(logout())
+    navigate('/')
+  }
+
   return (
     <div className="min-h-screen bg-background">
       <header className="sticky top-0 z-50 border-b border-border/80 bg-background/90 backdrop-blur-xl">
@@ -16,12 +31,26 @@ export default function PublicLayout({ children }) {
             </Link>
 
             <div className="flex items-center gap-2">
-              <Button variant="outline" asChild>
-                <Link to="/login">Login</Link>
-              </Button>
-              <Button asChild>
-                <Link to="/signup">Get Started</Link>
-              </Button>
+              <LanguageSwitcher />
+              {isLoggedIn ? (
+                <>
+                  <Button variant="outline" asChild>
+                    <Link to="/dashboard"><LayoutDashboard className="mr-1.5 h-4 w-4" />{t('nav.dashboard')}</Link>
+                  </Button>
+                  <Button variant="ghost" onClick={handleLogout} className="text-muted-foreground hover:text-destructive">
+                    <LogOut className="mr-1.5 h-4 w-4" />{t('nav.logout')}
+                  </Button>
+                </>
+              ) : (
+                <>
+                  <Button variant="outline" asChild>
+                    <Link to="/login">{t('nav.login')}</Link>
+                  </Button>
+                  <Button asChild>
+                    <Link to="/signup">{t('nav.getStarted')}</Link>
+                  </Button>
+                </>
+              )}
             </div>
           </div>
         </div>
@@ -65,3 +94,4 @@ export default function PublicLayout({ children }) {
     </div>
   )
 }
+

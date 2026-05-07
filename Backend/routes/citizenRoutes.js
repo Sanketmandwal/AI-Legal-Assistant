@@ -1,10 +1,10 @@
-// src/routes/citizenRoutes.js
 import express from "express";
 import {authMiddleware,requireRole} from "../middlewares/authMiddleware.js";
 import upload from "../middlewares/multerConfig.js";
 import {
   submitCitizenProfile,
   getCitizenProfile,
+  updateCitizenProfile,
 } from "../controllers/citizenController.js";
 import { getCitizenConsultations } from "../controllers/consultationController.js";
 
@@ -30,6 +30,13 @@ router.get(
   "/profile",
   authMiddleware,
   getCitizenProfile
+);
+
+router.patch(
+  "/profile",
+  authMiddleware,
+  requireRole(["citizen"]),
+  updateCitizenProfile
 );
 
 export default router;

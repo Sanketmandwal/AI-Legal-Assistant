@@ -2,8 +2,8 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import axiosClient from '@/api/axiosClient'
 
-export function useMyChatRooms() {
-  return useQuery({ queryKey: ['chatRooms'], queryFn: async () => { const { data } = await axiosClient.get('/chat/my-rooms'); return data }, refetchInterval: 15000 })
+export function useMyChatRooms(options = {}) {
+  return useQuery({ queryKey: ['chatRooms'], queryFn: async () => { const { data } = await axiosClient.get('/chat/my-rooms'); return data }, refetchInterval: 15000, ...options })
 }
 export function useChatRoomDetails(roomId) {
   return useQuery({ queryKey: ['chatRoom', roomId], queryFn: async () => { const { data } = await axiosClient.get(`/chat/rooms/${roomId}`); return data }, enabled: !!roomId })

@@ -29,6 +29,7 @@ import FIRDetailPage from '@/features/citizen/pages/FIRDetailPage'
 import LawyerRecommendations from '@/features/citizen/pages/LawyerRecommendations'
 import ConsultationsPage from '@/features/citizen/pages/ConsultationsPage'
 import CitizenProfilePage from '@/features/citizen/pages/CitizenProfilePage'
+import AILegalAdvisor from '@/features/citizen/pages/AILegalAdvisor'
 
 // Lawyer Pages
 import LawyerDashboard from '@/features/lawyer/pages/LawyerDashboard'
@@ -36,6 +37,7 @@ import IncomingRequestsPage from '@/features/lawyer/pages/IncomingRequestsPage'
 import ConsultationHistoryPage from '@/features/lawyer/pages/ConsultationHistoryPage'
 import LawyerProfilePage from '@/features/lawyer/pages/LawyerProfilePage'
 import LawyerReviewsPage from '@/features/lawyer/pages/LawyerReviewsPage'
+import CaseAnalyzer from '@/features/lawyer/pages/CaseAnalyzer'
 
 // Police Pages
 import PoliceDashboard from '@/features/police/pages/PoliceDashboard'
@@ -50,6 +52,9 @@ import AdminProfilePage from '@/features/admin/pages/AdminProfilePage'
 
 // Chat
 import ChatPage from '@/features/chat/pages/ChatPage'
+
+// Shared AI Pages
+import AILegalResearch from '@/components/shared/AILegalResearch'
 
 export default function App() {
   return (
@@ -85,6 +90,8 @@ export default function App() {
             <Route path="/citizen/profile" element={<CitizenProfilePage />} />
             <Route path="/citizen/chat" element={<ChatPage />} />
             <Route path="/citizen/chat/:roomId" element={<ChatPage />} />
+            <Route path="/citizen/ai-advisor" element={<AILegalAdvisor />} />
+            <Route path="/citizen/legal-research" element={<AILegalResearch />} />
           </Route>
         </Route>
 
@@ -98,6 +105,8 @@ export default function App() {
             <Route path="/lawyer/reviews" element={<LawyerReviewsPage />} />
             <Route path="/lawyer/chat" element={<ChatPage />} />
             <Route path="/lawyer/chat/:roomId" element={<ChatPage />} />
+            <Route path="/lawyer/case-analyzer" element={<CaseAnalyzer />} />
+            <Route path="/lawyer/legal-research" element={<AILegalResearch />} />
           </Route>
         </Route>
 

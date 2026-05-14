@@ -1,4 +1,3 @@
-// src/features/auth/pages/SignupPage.jsx
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useForm } from 'react-hook-form'
@@ -9,200 +8,148 @@ import PublicLayout from '@/components/common/PublicLayout'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Badge } from '@/components/ui/badge'
-import { Scale, Eye, EyeOff, Loader2 } from 'lucide-react'
+import { Eye, EyeOff, Loader2 } from 'lucide-react'
 
 const signupSchema = z.object({
   name: z.string().min(2, 'Name must be at least 2 characters').max(80),
   email: z.string().email('Enter a valid email'),
-  phone: z
-    .string()
-    .regex(/^\+?\d{10,15}$/, 'Enter a valid phone number (10-15 digits, optional + prefix)'),
+  phone: z.string().regex(/^\+?\d{10,15}$/, 'Enter a valid phone number (10–15 digits)'),
   password: z.string().min(6, 'Password must be at least 6 characters'),
   role: z.enum(['citizen', 'lawyer', 'police']),
 })
 
 const ROLES = [
-  {
-    value: 'citizen',
-    label: 'Citizen',
-    description: 'File FIRs and get legal help',
-    color: 'border-primary bg-primary/5 text-primary',
-    active: 'ring-3 ring-primary/10',
-  },
-  {
-    value: 'lawyer',
-    label: 'Lawyer',
-    description: 'Offer legal consultations',
-    color: 'border-primary bg-primary/5 text-primary',
-    active: 'ring-3 ring-primary/10',
-  },
-  {
-    value: 'police',
-    label: 'Police',
-    description: 'Manage FIR cases',
-    color: 'border-primary bg-primary/5 text-primary',
-    active: 'ring-3 ring-primary/10',
-  },
+  { value: 'citizen', label: 'Citizen', desc: 'File FIRs & get legal help' },
+  { value: 'lawyer',  label: 'Lawyer',  desc: 'Offer legal consultations'  },
+  { value: 'police',  label: 'Police',  desc: 'Manage FIR cases'           },
 ]
 
 export default function SignupPage() {
   const [showPassword, setShowPassword] = useState(false)
   const registerMutation = useRegister()
 
-  const {
-    register,
-    handleSubmit,
-    setValue,
-    watch,
-    formState: { errors },
-  } = useForm({
+  const { register, handleSubmit, setValue, watch, formState: { errors } } = useForm({
     resolver: zodResolver(signupSchema),
     defaultValues: { name: '', email: '', phone: '', password: '', role: 'citizen' },
   })
 
   const selectedRole = watch('role')
-
-  const onSubmit = (data) => {
-    registerMutation.mutate(data)
-  }
+  const onSubmit = (data) => registerMutation.mutate(data)
 
   return (
     <PublicLayout>
-      <div className="flex min-h-[calc(100vh-8rem)] items-center justify-center px-4 py-12">
-        <Card className="w-full max-w-lg">
-          <CardHeader className="text-center pb-4">
-            <div className="flex justify-center mb-4">
-              <div className="flex size-12 items-center justify-center rounded-xl bg-primary text-primary-foreground shadow-sm shadow-primary/20">
-                <Scale className="h-6 w-6 text-white" />
-              </div>
-            </div>
-            <CardTitle className="text-2xl">Create an Account</CardTitle>
-            <CardDescription>Join India's AI-powered legal platform</CardDescription>
-          </CardHeader>
+      <div
+        className="relative flex min-h-[calc(100vh-4rem)] items-center justify-center px-4 py-16 overflow-hidden"
+        style={{
+          background: 'linear-gradient(135deg, oklch(0.44 0.10 185) 0%, oklch(0.35 0.09 210) 50%, oklch(0.22 0.04 240) 100%)',
+        }}
+      >
+        {/* depth blobs */}
+        <div className="absolute inset-0 pointer-events-none overflow-hidden">
+          <div className="absolute -top-32 -right-24 w-[500px] h-[500px] rounded-full opacity-20"
+            style={{ background: 'radial-gradient(circle, oklch(0.70 0.12 185), transparent 70%)' }} />
+          <div className="absolute -bottom-32 -left-32 w-[420px] h-[420px] rounded-full opacity-15"
+            style={{ background: 'radial-gradient(circle, oklch(0.60 0.14 200), transparent 70%)' }} />
+        </div>
 
-          <CardContent>
+        <div className="relative z-10 w-full max-w-md">
+
+          <div className="mb-8 text-center">
+            <h1 className="text-3xl font-bold text-white tracking-tight mb-2">Create an account</h1>
+            <p className="text-base text-white/65">Join India's AI-powered legal platform</p>
+          </div>
+
+          <div className="rounded-2xl border border-white/20 bg-white/12 backdrop-blur-2xl shadow-2xl shadow-black/30 px-8 py-9">
             <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
-              {/* Role Selector */}
-              <div className="space-y-2">
-                <Label className="text-sm font-medium">I am a</Label>
-                <div className="grid grid-cols-3 gap-2">
-                  {ROLES.map((role) => (
-                    <button
-                      key={role.value}
-                      type="button"
-                      onClick={() => setValue('role', role.value)}
-                    className={`relative cursor-pointer rounded-xl border p-3 text-center transition-colors ${
-                        selectedRole === role.value
-                          ? `${role.color} ${role.active}`
-                          : 'border-slate-200 bg-white hover:border-slate-300'
-                      }`}
-                    >
-                      <div className="text-sm font-semibold">{role.label}</div>
-                      <div className="text-[11px] text-slate-500 mt-0.5 leading-tight">
-                        {role.description}
-                      </div>
-                    </button>
-                  ))}
+
+              {/* Role selector */}
+              <div className="space-y-2.5">
+                <Label className="text-sm font-semibold text-white/90">I am a</Label>
+                <div className="grid grid-cols-3 gap-2.5">
+                  {ROLES.map((role) => {
+                    const active = selectedRole === role.value
+                    return (
+                      <button
+                        key={role.value}
+                        type="button"
+                        onClick={() => setValue('role', role.value, { shouldValidate: true })}
+                        className={`rounded-xl border px-2 py-3.5 text-center transition-all duration-150 cursor-pointer
+                          ${active
+                            ? 'border-white/70 bg-white/25 ring-2 ring-white/30'
+                            : 'border-white/15 bg-white/8 hover:bg-white/15 hover:border-white/30'}`}
+                      >
+                        <div className={`text-sm font-semibold ${active ? 'text-white' : 'text-white/70'}`}>
+                          {role.label}
+                        </div>
+                        <div className="text-[10px] text-white/45 mt-0.5 leading-tight">{role.desc}</div>
+                      </button>
+                    )
+                  })}
                 </div>
-                {errors.role && (
-                  <p className="text-xs text-red-500">{errors.role.message}</p>
-                )}
               </div>
 
               {/* Name */}
-              <div className="space-y-1.5">
-                <Label htmlFor="signup-name">Full Name</Label>
-                <Input
-                  id="signup-name"
-                  placeholder="Enter your full name"
+              <div className="space-y-2">
+                <Label htmlFor="signup-name" className="text-sm font-semibold text-white/90">Full Name</Label>
+                <Input id="signup-name" placeholder="Priya Sharma" autoComplete="name"
                   {...register('name')}
-                  className={errors.name ? 'border-red-300' : ''}
-                />
-                {errors.name && (
-                  <p className="text-xs text-red-500">{errors.name.message}</p>
-                )}
+                  className={`h-12 text-base bg-white/15 border-white/25 text-white placeholder:text-white/40 focus:bg-white/20 focus:border-white/50 ${errors.name ? 'border-red-400/70' : ''}`} />
+                {errors.name && <p className="text-sm text-red-300">{errors.name.message}</p>}
               </div>
 
               {/* Email */}
-              <div className="space-y-1.5">
-                <Label htmlFor="signup-email">Email Address</Label>
-                <Input
-                  id="signup-email"
-                  type="email"
-                  placeholder="you@example.com"
+              <div className="space-y-2">
+                <Label htmlFor="signup-email" className="text-sm font-semibold text-white/90">Email</Label>
+                <Input id="signup-email" type="email" placeholder="you@example.com" autoComplete="email"
                   {...register('email')}
-                  className={errors.email ? 'border-red-300' : ''}
-                />
-                {errors.email && (
-                  <p className="text-xs text-red-500">{errors.email.message}</p>
-                )}
+                  className={`h-12 text-base bg-white/15 border-white/25 text-white placeholder:text-white/40 focus:bg-white/20 focus:border-white/50 ${errors.email ? 'border-red-400/70' : ''}`} />
+                {errors.email && <p className="text-sm text-red-300">{errors.email.message}</p>}
               </div>
 
               {/* Phone */}
-              <div className="space-y-1.5">
-                <Label htmlFor="signup-phone">Phone Number</Label>
-                <Input
-                  id="signup-phone"
-                  type="tel"
-                  placeholder="+919876543210"
+              <div className="space-y-2">
+                <Label htmlFor="signup-phone" className="text-sm font-semibold text-white/90">Phone</Label>
+                <Input id="signup-phone" type="tel" placeholder="+91 98765 43210" autoComplete="tel"
                   {...register('phone')}
-                  className={errors.phone ? 'border-red-300' : ''}
-                />
-                {errors.phone && (
-                  <p className="text-xs text-red-500">{errors.phone.message}</p>
-                )}
+                  className={`h-12 text-base bg-white/15 border-white/25 text-white placeholder:text-white/40 focus:bg-white/20 focus:border-white/50 ${errors.phone ? 'border-red-400/70' : ''}`} />
+                {errors.phone && <p className="text-sm text-red-300">{errors.phone.message}</p>}
               </div>
 
               {/* Password */}
-              <div className="space-y-1.5">
-                <Label htmlFor="signup-password">Password</Label>
+              <div className="space-y-2">
+                <Label htmlFor="signup-password" className="text-sm font-semibold text-white/90">Password</Label>
                 <div className="relative">
-                  <Input
-                    id="signup-password"
+                  <Input id="signup-password"
                     type={showPassword ? 'text' : 'password'}
                     placeholder="At least 6 characters"
+                    autoComplete="new-password"
                     {...register('password')}
-                    className={`pr-10 ${errors.password ? 'border-red-300' : ''}`}
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setShowPassword((v) => !v)}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
-                  >
-                    {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                    className={`h-12 text-base pr-12 bg-white/15 border-white/25 text-white placeholder:text-white/40 focus:bg-white/20 focus:border-white/50 ${errors.password ? 'border-red-400/70' : ''}`} />
+                  <button type="button" onClick={() => setShowPassword((v) => !v)}
+                    className="absolute right-4 top-1/2 -translate-y-1/2 text-white/50 hover:text-white/90 transition-colors"
+                    aria-label={showPassword ? 'Hide password' : 'Show password'}>
+                    {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
                   </button>
                 </div>
-                {errors.password && (
-                  <p className="text-xs text-red-500">{errors.password.message}</p>
-                )}
+                {errors.password && <p className="text-sm text-red-300">{errors.password.message}</p>}
               </div>
 
-              <Button
-                type="submit"
-                className="w-full h-11"
-                disabled={registerMutation.isPending}
-              >
-                {registerMutation.isPending ? (
-                  <>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    Creating account...
-                  </>
-                ) : (
-                  'Create Account'
-                )}
+              <Button type="submit"
+                className="w-full h-12 text-base font-semibold bg-white text-primary hover:bg-white/90 active:bg-white/80 shadow-lg shadow-black/20 border-0 mt-1"
+                disabled={registerMutation.isPending}>
+                {registerMutation.isPending
+                  ? <><Loader2 className="mr-2 h-5 w-5 animate-spin" />Creating account…</>
+                  : 'Create account'}
               </Button>
 
-              <p className="text-center text-sm text-slate-500">
-                Already have an account?{' '}
-                <Link to="/login" className="text-primary font-medium hover:underline">
-                  Login
-                </Link>
-              </p>
             </form>
-          </CardContent>
-        </Card>
+          </div>
+
+          <p className="mt-6 text-center text-sm text-white/60">
+            Already have an account?{' '}
+            <Link to="/login" className="text-white font-semibold hover:underline underline-offset-2">Sign in</Link>
+          </p>
+        </div>
       </div>
     </PublicLayout>
   )

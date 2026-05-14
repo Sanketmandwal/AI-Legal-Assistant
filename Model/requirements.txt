@@ -15,7 +15,7 @@ faiss-cpu==1.8.0
 numpy==1.26.4
 
 # LLM
-groq==0.9.0
+groq==1.2.0
 
 # Data processing
 tiktoken==0.7.0

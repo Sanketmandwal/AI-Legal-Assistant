@@ -33,7 +33,7 @@ SIMILARITY_THRESHOLD = 0.42  # below this → "no relevant provision found"
 
 # ── LLM ────────────────────────────────────────────────────
 GROQ_API_KEY  = os.getenv("GROQ_API_KEY", "")
-GROQ_MODEL = "llama-3.3-70b-versatile"   # fast + capable on Groq
+GROQ_MODEL = "openai/gpt-oss-120b"   # fast + capable on Groq
 # GROQ_MODEL = "openai/gpt-oss-120b"
 MAX_TOKENS    = 1500
 TEMPERATURE   = 0.1   # low temp = more deterministic = fewer hallucinations

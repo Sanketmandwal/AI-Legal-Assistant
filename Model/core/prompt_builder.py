@@ -122,6 +122,12 @@ def build_system_prompt(role: str, context: str, language: str = "english") -> s
 
     if language.lower() == "english":
         lang_instr = "Respond in English. Use clear, professional language."
+    elif language.lower() == "marathi":
+        lang_instr = (
+            "Respond in Marathi. Keep all Act names, Section numbers, and "
+            "exact_quote fields in English. Provide interpretation and "
+            "explanation in Marathi around these English terms."
+        )
     else:
         lang_instr = (
             "Respond in Hindi. Keep all Act names, Section numbers, and "
@@ -154,6 +160,8 @@ def build_feature_prompt(
 
     if language == "english":
         lang_note = "Respond in English."
+    elif language == "marathi":
+        lang_note = "Respond in Marathi, keep Act names, Section numbers, and exact quotes in English."
     else:
         lang_note = "Respond in Hindi, keep Act names, Section numbers, and exact quotes in English."
 

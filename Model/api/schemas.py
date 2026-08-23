@@ -19,6 +19,7 @@ class RoleEnum(str, Enum):
 class LanguageEnum(str, Enum):
     english = "english"
     hindi   = "hindi"
+    marathi = "marathi"
 
 
 # ── Shared base ────────────────────────────────────────────

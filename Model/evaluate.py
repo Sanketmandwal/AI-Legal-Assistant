@@ -717,7 +717,7 @@ def compute_performance_metrics(retriever) -> dict:
         "index_size_mb":        round(index_mb, 3),
         "embedding_dimensions": 384,
         "embedding_model":      "all-MiniLM-L6-v2",
-        "llm_model":            "llama-3.3-70b-versatile (Groq)",
+        "llm_model":            "openai/gpt-oss-120b (Groq)",
         "similarity_threshold": 0.42,
         "cpu_only":             True,
     }
@@ -927,7 +927,7 @@ def main():
             "timestamp":        datetime.now().isoformat(),
             "system":           "AI Legal Workflow Assistant",
             "corpus":           "Constitution + BNS + BNSS + BSA + Indian Contract Act",
-            "llm":              "llama-3.3-70b-versatile via Groq API",
+            "llm":              "openai/gpt-oss-120b via Groq API",
             "embeddings":       "all-MiniLM-L6-v2 (SentenceTransformers)",
             "vector_store":     "FAISS IndexFlatIP (CPU)",
             "category_run":     cat,

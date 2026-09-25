@@ -41,13 +41,13 @@ def build_index(embeddings: np.ndarray, chunks: list[dict]) -> faiss.Index:
 
     # Save FAISS index
     faiss.write_index(index, str(FAISS_INDEX))
-    print(f"  Saved FAISS index → {FAISS_INDEX}")
+    print(f"  Saved FAISS index to {FAISS_INDEX}")
 
     # Save chunk metadata alongside the index
     # We store the full chunks list; index position i → chunks[i]
     with open(FAISS_META, "wb") as f:
         pickle.dump(chunks, f)
-    print(f"  Saved metadata → {FAISS_META}")
+    print(f"  Saved metadata to {FAISS_META}")
 
     return index
 

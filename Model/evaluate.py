@@ -31,20 +31,37 @@ import statistics
 from pathlib import Path
 from datetime import datetime
 
-# ── Bootstrap the engine (loads FAISS + embedding model once) ──
+# ── Bootstrap the engine (loads FAISS + BM25 + embedding model once) ──
 from core.engine import initialize, query, query_feature
 initialize()
 
-from sentence_transformers import SentenceTransformer
 import numpy as np
+from config import EMBEDDING_MODEL, RERANK_MODEL, RERANK_CONFIDENCE_THRESHOLD
 
-# Reuse the same embedding model — do NOT load a second instance
-_embed_model = SentenceTransformer("all-MiniLM-L6-v2")
+# Reuse the engine's embedding model to prevent loading duplicate models in memory
+_embed_model = None
+
+def _get_embed_model():
+    global _embed_model
+    if _embed_model is None:
+        from core.engine import _retriever
+        if _retriever is not None and getattr(_retriever, "model", None) is not None:
+            _embed_model = _retriever.model
+        else:
+            from sentence_transformers import SentenceTransformer
+            _embed_model = SentenceTransformer(EMBEDDING_MODEL)
+    return _embed_model
+
 
 
 # ══════════════════════════════════════════════════════════════
 # SHARED UTILITY
 # ══════════════════════════════════════════════════════════════
+
+def _safe_mean(lst: list, default: float = 0.0) -> float:
+    """Compute mean safely without raising StatisticsError on empty sequences."""
+    return statistics.mean(lst) if lst else default
+
 
 def _extract_num(section_str: str) -> str:
     """
@@ -61,9 +78,9 @@ def _extract_num(section_str: str) -> str:
     """
     if not section_str:
         return ""
-    # Remove known prefix words
+    # Remove known prefix words including sec, art, article, section, s.
     cleaned = re.sub(
-        r'^(section|article|s\.)\s*',
+        r'^(?:section|article|art|sec|s)\.?\s*',
         '',
         section_str.strip(),
         flags=re.IGNORECASE,
@@ -81,7 +98,8 @@ def _cosine_sim(a: np.ndarray, b: np.ndarray) -> float:
 def _semantic_similarity(text1: str, text2: str) -> float:
     if not text1 or not text2:
         return 0.0
-    vecs = _embed_model.encode(
+    model = _get_embed_model()
+    vecs = model.encode(
         [text1, text2],
         normalize_embeddings=True,
         convert_to_numpy=True,
@@ -198,6 +216,389 @@ RETRIEVAL_GROUND_TRUTH = [
         "relevant_act":      "BSA",
         "category":          "evidence",
     },
+    # ── New BNS criminal entries ─────────────────────────────────
+    {
+        "query":             "What is rape and its punishment under BNS?",
+        "relevant_sections": ["63", "64", "65"],
+        "relevant_act":      "BNS",
+        "category":          "criminal",
+    },
+    {
+        "query":             "What is the offence of kidnapping under BNS?",
+        "relevant_sections": ["137", "138", "140"],
+        "relevant_act":      "BNS",
+        "category":          "criminal",
+    },
+    {
+        "query":             "What is dacoity and its punishment?",
+        "relevant_sections": ["310", "311", "312"],
+        "relevant_act":      "BNS",
+        "category":          "criminal",
+    },
+    {
+        "query":             "What is extortion under BNS?",
+        "relevant_sections": ["308"],
+        "relevant_act":      "BNS",
+        "category":          "criminal",
+    },
+    {
+        "query":             "What is robbery under BNS?",
+        "relevant_sections": ["309", "310"],
+        "relevant_act":      "BNS",
+        "category":          "criminal",
+    },
+    {
+        "query":             "What is criminal intimidation under BNS?",
+        "relevant_sections": ["351"],
+        "relevant_act":      "BNS",
+        "category":          "criminal",
+    },
+    {
+        "query":             "What is the punishment for causing death by negligence?",
+        "relevant_sections": ["106"],
+        "relevant_act":      "BNS",
+        "category":          "criminal",
+    },
+    {
+        "query":             "What is abetment of suicide under BNS?",
+        "relevant_sections": ["108", "107"],
+        "relevant_act":      "BNS",
+        "category":          "criminal",
+    },
+    {
+        "query":             "What is forgery and punishment under BNS?",
+        "relevant_sections": ["335", "336", "337", "338"],
+        "relevant_act":      "BNS",
+        "category":          "criminal",
+    },
+    {
+        "query":             "What is the offence of stalking under BNS?",
+        "relevant_sections": ["78"],
+        "relevant_act":      "BNS",
+        "category":          "criminal",
+    },
+    {
+        "query":             "What is dowry death under BNS?",
+        "relevant_sections": ["80"],
+        "relevant_act":      "BNS",
+        "category":          "criminal",
+    },
+    {
+        "query":             "What is wrongful confinement under BNS?",
+        "relevant_sections": ["126", "127"],
+        "relevant_act":      "BNS",
+        "category":          "criminal",
+    },
+    {
+        "query":             "What is criminal breach of trust under BNS?",
+        "relevant_sections": ["316"],
+        "relevant_act":      "BNS",
+        "category":          "criminal",
+    },
+    {
+        "query":             "What is defamation under BNS?",
+        "relevant_sections": ["356"],
+        "relevant_act":      "BNS",
+        "category":          "criminal",
+    },
+    {
+        "query":             "What is criminal conspiracy under BNS?",
+        "relevant_sections": ["61"],
+        "relevant_act":      "BNS",
+        "category":          "criminal",
+    },
+    {
+        "query":             "What is trafficking of persons under BNS?",
+        "relevant_sections": ["143", "144"],
+        "relevant_act":      "BNS",
+        "category":          "criminal",
+    },
+    {
+        "query":             "What is acid attack and its punishment under BNS?",
+        "relevant_sections": ["124"],
+        "relevant_act":      "BNS",
+        "category":          "criminal",
+    },
+    {
+        "query":             "What is mischief under BNS?",
+        "relevant_sections": ["324", "325", "326"],
+        "relevant_act":      "BNS",
+        "category":          "criminal",
+    },
+    {
+        "query":             "What is cheating by personation under BNS?",
+        "relevant_sections": ["319"],
+        "relevant_act":      "BNS",
+        "category":          "criminal",
+    },
+    {
+        "query":             "What is rioting and unlawful assembly under BNS?",
+        "relevant_sections": ["189", "191"],
+        "relevant_act":      "BNS",
+        "category":          "criminal",
+    },
+    {
+        "query":             "What is sexual harassment under BNS?",
+        "relevant_sections": ["75"],
+        "relevant_act":      "BNS",
+        "category":          "criminal",
+    },
+    {
+        "query":             "What is the right of private defence under BNS?",
+        "relevant_sections": ["34", "35", "36", "37", "38"],
+        "relevant_act":      "BNS",
+        "category":          "criminal",
+    },
+    {
+        "query":             "What is organised crime under BNS?",
+        "relevant_sections": ["111"],
+        "relevant_act":      "BNS",
+        "category":          "criminal",
+    },
+    {
+        "query":             "What is the punishment for attempt to murder?",
+        "relevant_sections": ["109"],
+        "relevant_act":      "BNS",
+        "category":          "criminal",
+    },
+    {
+        "query":             "What are offences against the state under BNS?",
+        "relevant_sections": ["147", "148", "152"],
+        "relevant_act":      "BNS",
+        "category":          "criminal",
+    },
+    {
+        "query":             "What is house-trespass and house-breaking under BNS?",
+        "relevant_sections": ["329", "330", "331"],
+        "relevant_act":      "BNS",
+        "category":          "criminal",
+    },
+    {
+        "query":             "What constitutes giving false evidence under BNS?",
+        "relevant_sections": ["227", "228", "229"],
+        "relevant_act":      "BNS",
+        "category":          "criminal",
+    },
+    # ── New Contract Act entries ──────────────────────────────────
+    {
+        "query":             "What is undue influence in contract law?",
+        "relevant_sections": ["14", "16", "19", "19a"],
+        "relevant_act":      "Contract Act",
+        "category":          "contract",
+    },
+    {
+        "query":             "What is fraud in a contract under Indian Contract Act?",
+        "relevant_sections": ["17", "19"],
+        "relevant_act":      "Contract Act",
+        "category":          "contract",
+    },
+    {
+        "query":             "What is a contingent contract?",
+        "relevant_sections": ["31", "32", "33"],
+        "relevant_act":      "Contract Act",
+        "category":          "contract",
+    },
+    {
+        "query":             "What are the effects of breach of contract?",
+        "relevant_sections": ["73", "74", "75"],
+        "relevant_act":      "Contract Act",
+        "category":          "contract",
+    },
+    {
+        "query":             "What is an agreement in restraint of trade?",
+        "relevant_sections": ["27"],
+        "relevant_act":      "Contract Act",
+        "category":          "contract",
+    },
+    {
+        "query":             "Who is competent to enter into a contract?",
+        "relevant_sections": ["10", "11", "12"],
+        "relevant_act":      "Contract Act",
+        "category":          "contract",
+    },
+    {
+        "query":             "What is the effect of a void agreement under the Contract Act?",
+        "relevant_sections": ["24", "25", "29"],
+        "relevant_act":      "Contract Act",
+        "category":          "contract",
+    },
+    {
+        "query":             "What is novation of contract?",
+        "relevant_sections": ["62"],
+        "relevant_act":      "Contract Act",
+        "category":          "contract",
+    },
+    {
+        "query":             "What is quasi-contract under the Indian Contract Act?",
+        "relevant_sections": ["68", "72"],
+        "relevant_act":      "Contract Act",
+        "category":          "contract",
+    },
+    # ── New BNSS procedural entries ───────────────────────────────
+    {
+        "query":             "What is a cognizable offence under BNSS?",
+        "relevant_sections": ["2"],
+        "relevant_act":      "BNSS",
+        "category":          "procedural",
+    },
+    {
+        "query":             "What is the procedure for arrest without warrant under BNSS?",
+        "relevant_sections": ["35", "36"],
+        "relevant_act":      "BNSS",
+        "category":          "procedural",
+    },
+    {
+        "query":             "What are the rights of an arrested person under BNSS?",
+        "relevant_sections": ["47", "48", "49", "50"],
+        "relevant_act":      "BNSS",
+        "category":          "procedural",
+    },
+    {
+        "query":             "What is the procedure for a charge sheet under BNSS?",
+        "relevant_sections": ["193"],
+        "relevant_act":      "BNSS",
+        "category":          "procedural",
+    },
+    {
+        "query":             "What is trial procedure for sessions cases under BNSS?",
+        "relevant_sections": ["231", "232", "233"],
+        "relevant_act":      "BNSS",
+        "category":          "procedural",
+    },
+    {
+        "query":             "What are the provisions for remand under BNSS?",
+        "relevant_sections": ["187"],
+        "relevant_act":      "BNSS",
+        "category":          "procedural",
+    },
+    {
+        "query":             "What is the procedure for search of a place by police?",
+        "relevant_sections": ["185", "186"],
+        "relevant_act":      "BNSS",
+        "category":          "procedural",
+    },
+    {
+        "query":             "How is a summons issued under BNSS?",
+        "relevant_sections": ["64", "65", "66"],
+        "relevant_act":      "BNSS",
+        "category":          "procedural",
+    },
+    # ── New Constitutional entries ────────────────────────────────
+    {
+        "query":             "What is freedom of speech and expression under Constitution?",
+        "relevant_sections": ["19"],
+        "relevant_act":      "Constitution",
+        "category":          "constitutional",
+    },
+    {
+        "query":             "What is the right against exploitation under Constitution?",
+        "relevant_sections": ["23", "24"],
+        "relevant_act":      "Constitution",
+        "category":          "constitutional",
+    },
+    {
+        "query":             "What is the right to constitutional remedies?",
+        "relevant_sections": ["32"],
+        "relevant_act":      "Constitution",
+        "category":          "constitutional",
+    },
+    {
+        "query":             "What is the right to education under the Constitution?",
+        "relevant_sections": ["21", "21a"],
+        "relevant_act":      "Constitution",
+        "category":          "constitutional",
+    },
+    {
+        "query":             "What is the right to freedom of religion under the Constitution?",
+        "relevant_sections": ["25", "26"],
+        "relevant_act":      "Constitution",
+        "category":          "constitutional",
+    },
+    {
+        "query":             "What are the fundamental duties under the Constitution?",
+        "relevant_sections": ["51a"],
+        "relevant_act":      "Constitution",
+        "category":          "constitutional",
+    },
+    {
+        "query":             "What are directive principles of state policy?",
+        "relevant_sections": ["36", "37", "38", "39"],
+        "relevant_act":      "Constitution",
+        "category":          "constitutional",
+    },
+    {
+        "query":             "What is the right against double jeopardy under the Constitution?",
+        "relevant_sections": ["20"],
+        "relevant_act":      "Constitution",
+        "category":          "constitutional",
+    },
+    {
+        "query":             "What is protection against arrest and detention under Constitution?",
+        "relevant_sections": ["22"],
+        "relevant_act":      "Constitution",
+        "category":          "constitutional",
+    },
+    {
+        "query":             "What is the abolition of untouchability under Constitution?",
+        "relevant_sections": ["17"],
+        "relevant_act":      "Constitution",
+        "category":          "constitutional",
+    },
+    # ── New BSA evidence entries ──────────────────────────────────
+    {
+        "query":             "What is the relevancy of expert opinion under BSA?",
+        "relevant_sections": ["39", "40", "45"],
+        "relevant_act":      "BSA",
+        "category":          "evidence",
+    },
+    {
+        "query":             "What is hearsay evidence and its admissibility under BSA?",
+        "relevant_sections": ["26", "27"],
+        "relevant_act":      "BSA",
+        "category":          "evidence",
+    },
+    {
+        "query":             "What is the rule regarding dying declaration under BSA?",
+        "relevant_sections": ["26"],
+        "relevant_act":      "BSA",
+        "category":          "evidence",
+    },
+    {
+        "query":             "What is estoppel under BSA?",
+        "relevant_sections": ["121", "122", "123"],
+        "relevant_act":      "BSA",
+        "category":          "evidence",
+    },
+    {
+        "query":             "What is primary and secondary evidence under BSA?",
+        "relevant_sections": ["57", "58", "59", "60"],
+        "relevant_act":      "BSA",
+        "category":          "evidence",
+    },
+    {
+        "query":             "What is the relevancy of previous judgments under BSA?",
+        "relevant_sections": ["34", "35", "36"],
+        "relevant_act":      "BSA",
+        "category":          "evidence",
+    },
+    {
+        "query":             "What is the presumption as to electronic records under BSA?",
+        "relevant_sections": ["85", "86", "90", "93"],
+        "relevant_act":      "BSA",
+        "category":          "evidence",
+    },
+    {
+        "query":             "What is cross-examination under BSA?",
+        "relevant_sections": ["142", "143", "149"],
+        "relevant_act":      "BSA",
+        "category":          "evidence",
+    },
+    {
+        "query":             "What is the presumption of dowry death under BSA?",
+        "relevant_sections": ["118"],
+        "relevant_act":      "BSA",
+        "category":          "evidence",
+    },
 ]
 
 # Queries that must be REJECTED — no relevant legal provision should be returned
@@ -209,6 +610,24 @@ NEGATIVE_QUERIES = [
     "How to write Python code?",
     "What is the best smartphone to buy?",
     "How do I lose weight fast?",
+    # ── Additional off-topic / non-legal negative queries ────
+    "What is the formula for water?",
+    "Who is the CEO of Google?",
+    "How do I bake a chocolate cake?",
+    "What is the population of India in 2024?",
+    "Explain quantum entanglement to me.",
+    "How to play chess as a beginner?",
+    "What are the best tourist places in Goa?",
+    "How do I fix my WiFi connection?",
+    "What is the plot of the movie Inception?",
+    "Tell me a bedtime story.",
+    "What is the latest football transfer news?",
+    "How many calories are in a banana?",
+    "Who wrote the Harry Potter series?",
+    "What is the weather like in Mumbai today?",
+    "How to install Windows 11 on my laptop?",
+    "What is artificial intelligence?",
+    "How do I start a YouTube channel?",
 ]
 
 # Semantically equivalent query pairs — good retrieval returns overlapping chunks
@@ -240,6 +659,63 @@ PARAPHRASE_PAIRS = [
     (
         "breach of contract",
         "other party did not fulfil agreement terms",
+    ),
+    # ── Additional paraphrase pairs ──────────────────────────
+    (
+        "rape under BNS",
+        "sexual assault punishment in Bharatiya Nyaya Sanhita",
+    ),
+    (
+        "kidnapping under BNS",
+        "abducting a person against their will under Indian law",
+    ),
+    (
+        "right to life under Constitution",
+        "Article 21 personal liberty protection",
+    ),
+    (
+        "coercion in contract",
+        "forced to sign agreement under threat",
+    ),
+    (
+        "burden of proof in criminal trial",
+        "who must prove guilt in a court case",
+    ),
+    (
+        "electronic evidence admissibility",
+        "can digital records be used in court",
+    ),
+    (
+        "dacoity punishment",
+        "armed gang robbery under Indian penal law",
+    ),
+    (
+        "dowry death",
+        "woman killed by husband over dowry demand",
+    ),
+    (
+        "undue influence in a contract",
+        "person pressured into agreement by dominant party",
+    ),
+    (
+        "freedom of speech India",
+        "right to express opinion under Article 19",
+    ),
+    (
+        "criminal conspiracy",
+        "two or more people planning to commit a crime together",
+    ),
+    (
+        "criminal breach of trust",
+        "misappropriation of property entrusted to someone",
+    ),
+    (
+        "right against self-incrimination",
+        "accused cannot be forced to testify against himself",
+    ),
+    (
+        "expert witness opinion",
+        "court considering opinion of forensic or medical specialist",
     ),
 ]
 
@@ -291,6 +767,111 @@ QUALITY_TEST_CASES = [
         "must_cite":      ["15"],
         "role":           "researcher",
     },
+    # ── Additional quality test cases ────────────────────────
+    {
+        "query":          "What is rape and its punishment under BNS?",
+        "expected_terms": ["rape", "sexual", "imprisonment", "consent", "woman"],
+        "must_cite":      ["63", "64"],
+        "role":           "advisor",
+    },
+    {
+        "query":          "What is dacoity under BNS?",
+        "expected_terms": ["dacoity", "robbery", "persons", "deadly",
+                           "imprisonment", "rigorous"],
+        "must_cite":      ["310"],
+        "role":           "advisor",
+    },
+    {
+        "query":          "What is extortion under the Bharatiya Nyaya Sanhita?",
+        "expected_terms": ["extortion", "fear", "injury", "delivery",
+                           "property", "wrongful"],
+        "must_cite":      ["308"],
+        "role":           "advisor",
+    },
+    {
+        "query":          "What is culpable homicide under BNS?",
+        "expected_terms": ["culpable", "homicide", "death", "intention",
+                           "knowledge", "bodily"],
+        "must_cite":      ["100"],
+        "role":           "researcher",
+    },
+    {
+        "query":          "What is the right to life and personal liberty under Article 21?",
+        "expected_terms": ["life", "liberty", "law", "person", "procedure",
+                           "deprived"],
+        "must_cite":      ["21"],
+        "role":           "advisor",
+    },
+    {
+        "query":          "What is freedom of speech and expression under the Indian Constitution?",
+        "expected_terms": ["speech", "expression", "freedom", "restrictions",
+                           "reasonable", "citizens"],
+        "must_cite":      ["19"],
+        "role":           "researcher",
+    },
+    {
+        "query":          "What is the right to constitutional remedies under Article 32?",
+        "expected_terms": ["writs", "habeas", "corpus", "mandamus", "Supreme",
+                           "Court", "enforcement"],
+        "must_cite":      ["32"],
+        "role":           "advisor",
+    },
+    {
+        "query":          "What is undue influence in Indian contract law?",
+        "expected_terms": ["undue", "influence", "dominant", "position",
+                           "benefit", "consent", "voidable"],
+        "must_cite":      ["16"],
+        "role":           "researcher",
+    },
+    {
+        "query":          "What are the consequences of breach of contract under Indian law?",
+        "expected_terms": ["breach", "compensation", "damages", "loss",
+                           "penalty", "contract"],
+        "must_cite":      ["73"],
+        "role":           "researcher",
+    },
+    {
+        "query":          "What is fraud under the Indian Contract Act?",
+        "expected_terms": ["fraud", "false", "representation", "fact",
+                           "concealment", "deceive", "consent"],
+        "must_cite":      ["17"],
+        "role":           "researcher",
+    },
+    {
+        "query":          "What is admissibility of confessions made to a police officer under BSA?",
+        "expected_terms": ["confession", "police", "officer", "custody",
+                           "relevant", "accused"],
+        "must_cite":      ["23"],
+        "role":           "researcher",
+    },
+    {
+        "query":          "What is expert opinion evidence under BSA?",
+        "expected_terms": ["expert", "opinion", "science", "art",
+                           "foreign", "handwriting", "court"],
+        "must_cite":      ["39"],
+        "role":           "researcher",
+    },
+    {
+        "query":          "What is dowry death under BNS and how is it proved?",
+        "expected_terms": ["dowry", "death", "woman", "harassment",
+                           "husband", "seven", "years"],
+        "must_cite":      ["80"],
+        "role":           "advisor",
+    },
+    {
+        "query":          "What is abetment and its punishment under BNS?",
+        "expected_terms": ["abetment", "abettor", "instigate", "aid",
+                           "conspires", "punishment"],
+        "must_cite":      ["45", "46"],
+        "role":           "researcher",
+    },
+    {
+        "query":          "What is criminal trespass under BNS?",
+        "expected_terms": ["trespass", "property", "intimidate", "annoy",
+                           "possession", "enter"],
+        "must_cite":      ["329"],
+        "role":           "advisor",
+    },
 ]
 
 # Grounding test queries — used to measure citation and hallucination rates
@@ -305,6 +886,27 @@ GROUNDING_TEST_QUERIES = [
     "What is anticipatory bail under BNSS?",
     "What is the burden of proof in a criminal trial?",
     "What is criminal breach of trust under BNS?",
+    # ── Additional grounding queries ─────────────────────────
+    "What is rape and its punishment under Bharatiya Nyaya Sanhita?",
+    "What is dowry death under BNS?",
+    "What is the right to life under Article 21 of the Constitution?",
+    "What is freedom of speech and expression under Article 19?",
+    "What is the right against self-incrimination under Article 20?",
+    "What is the right to constitutional remedies under Article 32?",
+    "What is fraud under the Indian Contract Act?",
+    "What is undue influence in a contract?",
+    "What are the consequences of breach of contract?",
+    "What is estoppel under the Bharatiya Sakshya Adhiniyam?",
+    "What is the procedure for remand under BNSS?",
+    "Can a police confession be used as evidence in court?",
+    "What is the standard of proof beyond reasonable doubt?",
+    "What is dacoity under BNS and its punishment?",
+    "What is criminal conspiracy under BNS?",
+    "What are the rights of an arrested person in India?",
+    "What is expert witness testimony under BSA?",
+    "Is an agreement in restraint of trade valid under Indian Contract Act?",
+    "What is the presumption of innocence in criminal law?",
+    "What is wrongful confinement under BNS?",
 ]
 
 
@@ -330,13 +932,17 @@ def compute_retrieval_metrics(retriever) -> dict:
     ndcg_scores  = []
     category_mrr = {}
 
-    for item in RETRIEVAL_GROUND_TRUTH:
+    total_gt = len(RETRIEVAL_GROUND_TRUTH)
+    for q_idx, item in enumerate(RETRIEVAL_GROUND_TRUTH, 1):
+        if q_idx % 10 == 0 or q_idx == total_gt:
+            print(f"      [{q_idx}/{total_gt}] Running hybrid retrieval & rerank...")
+
         q_text   = item["query"]
         relevant = set(item["relevant_sections"])  # already bare numbers
         category = item["category"]
 
-        # Retrieve with threshold=0 so we always get top-5 for fair comparison
-        chunks = retriever.retrieve(q_text, top_k=5, threshold=0.0)
+        # Retrieve with threshold=-999.0 so cross-encoder negative logits don't drop candidates
+        chunks = retriever.retrieve(q_text, top_k=5, threshold=-999.0)
 
         # Normalize retrieved section numbers
         retrieved = [_extract_num(c.section_num) for c in chunks]
@@ -372,38 +978,40 @@ def compute_retrieval_metrics(retriever) -> dict:
         ndcg_scores.append(dcg / idcg if idcg > 0 else 0.0)
 
     # Negative query rejection rate
+    print(f"      Testing {len(NEGATIVE_QUERIES)} negative queries...")
     rejected = 0
     for neg_q in NEGATIVE_QUERIES:
-        # Use the real threshold here
+        # Use the configured threshold to test out-of-domain filtering
         chunks = retriever.retrieve(neg_q, top_k=5)
         if len(chunks) == 0:
             rejected += 1
-    rejection_rate = rejected / len(NEGATIVE_QUERIES)
+    rejection_rate = rejected / len(NEGATIVE_QUERIES) if NEGATIVE_QUERIES else 0.0
 
     # Paraphrase consistency (Jaccard overlap of top-5 chunk IDs)
+    print(f"      Testing {len(PARAPHRASE_PAIRS)} paraphrase pairs...")
     consistency = []
     for q1, q2 in PARAPHRASE_PAIRS:
-        c1   = set(c.chunk_id for c in retriever.retrieve(q1, top_k=5, threshold=0.0))
-        c2   = set(c.chunk_id for c in retriever.retrieve(q2, top_k=5, threshold=0.0))
+        c1   = set(c.chunk_id for c in retriever.retrieve(q1, top_k=5, threshold=-999.0))
+        c2   = set(c.chunk_id for c in retriever.retrieve(q2, top_k=5, threshold=-999.0))
         union = len(c1 | c2)
         consistency.append(len(c1 & c2) / union if union > 0 else 0.0)
 
     metrics = {
-        "precision_at_1":  round(statistics.mean(precision_at[1]), 4),
-        "precision_at_3":  round(statistics.mean(precision_at[3]), 4),
-        "precision_at_5":  round(statistics.mean(precision_at[5]), 4),
-        "recall_at_1":     round(statistics.mean(recall_at[1]),    4),
-        "recall_at_3":     round(statistics.mean(recall_at[3]),    4),
-        "recall_at_5":     round(statistics.mean(recall_at[5]),    4),
-        "hit_at_1":        round(statistics.mean(hit_at[1]),       4),
-        "hit_at_3":        round(statistics.mean(hit_at[3]),       4),
-        "hit_at_5":        round(statistics.mean(hit_at[5]),       4),
-        "mrr":             round(statistics.mean(mrr_scores),      4),
-        "ndcg_at_5":       round(statistics.mean(ndcg_scores),     4),
-        "negative_rejection_rate": round(rejection_rate,           4),
-        "paraphrase_consistency":  round(statistics.mean(consistency), 4),
+        "precision_at_1":  round(_safe_mean(precision_at[1]), 4),
+        "precision_at_3":  round(_safe_mean(precision_at[3]), 4),
+        "precision_at_5":  round(_safe_mean(precision_at[5]), 4),
+        "recall_at_1":     round(_safe_mean(recall_at[1]),    4),
+        "recall_at_3":     round(_safe_mean(recall_at[3]),    4),
+        "recall_at_5":     round(_safe_mean(recall_at[5]),    4),
+        "hit_at_1":        round(_safe_mean(hit_at[1]),       4),
+        "hit_at_3":        round(_safe_mean(hit_at[3]),       4),
+        "hit_at_5":        round(_safe_mean(hit_at[5]),       4),
+        "mrr":             round(_safe_mean(mrr_scores),      4),
+        "ndcg_at_5":       round(_safe_mean(ndcg_scores),     4),
+        "negative_rejection_rate": round(rejection_rate,      4),
+        "paraphrase_consistency":  round(_safe_mean(consistency), 4),
         "per_category_mrr": {
-            cat: round(statistics.mean(scores), 4)
+            cat: round(_safe_mean(scores), 4)
             for cat, scores in category_mrr.items()
         },
         "total_queries": len(RETRIEVAL_GROUND_TRUTH),
@@ -443,7 +1051,10 @@ def compute_grounding_metrics() -> dict:
     confidence_scores  = []
     disclaimer_present = []
 
-    for q in GROUNDING_TEST_QUERIES:
+    total_gq = len(GROUNDING_TEST_QUERIES)
+    for idx, q in enumerate(GROUNDING_TEST_QUERIES, 1):
+        if idx % 5 == 0 or idx == total_gq:
+            print(f"      [{idx}/{total_gq}] Evaluating grounding queries via LLM...")
         result = query(q, role="researcher")
 
         # Citation accuracy
@@ -480,6 +1091,7 @@ def compute_grounding_metrics() -> dict:
         disclaimer_present.append(1 if result.get("disclaimer") else 0)
 
     # Irrelevant query refusal
+    print(f"      Testing refusal on {len(NEGATIVE_QUERIES)} negative queries...")
     refused = 0
     for neg_q in NEGATIVE_QUERIES:
         result    = query(neg_q)
@@ -488,25 +1100,25 @@ def compute_grounding_metrics() -> dict:
         low_conf  = float(result.get("confidence", {}).get("score", 1)) < 0.3
         if has_error or (no_provs and low_conf):
             refused += 1
-    refusal_rate = refused / len(NEGATIVE_QUERIES)
+    refusal_rate = refused / len(NEGATIVE_QUERIES) if NEGATIVE_QUERIES else 0.0
 
     # Composite grounding score (weighted)
     grounding_score = round(
-        statistics.mean(citation_accuracy)   * 0.35 +
-        (1 - statistics.mean(hallucination_rate)) * 0.30 +
-        statistics.mean(quote_presence)      * 0.20 +
-        (1 - statistics.mean(drift_rate))    * 0.15,
+        _safe_mean(citation_accuracy)        * 0.35 +
+        (1 - _safe_mean(hallucination_rate)) * 0.30 +
+        _safe_mean(quote_presence)           * 0.20 +
+        (1 - _safe_mean(drift_rate))         * 0.15,
         4,
     )
 
     metrics = {
-        "citation_accuracy":       round(statistics.mean(citation_accuracy),   4),
-        "hallucination_rate":      round(statistics.mean(hallucination_rate),  4),
-        "quote_presence_rate":     round(statistics.mean(quote_presence),      4),
-        "semantic_drift_rate":     round(statistics.mean(drift_rate),          4),
-        "avg_confidence_score":    round(statistics.mean(confidence_scores),   4),
-        "disclaimer_presence_rate":round(statistics.mean(disclaimer_present),  4),
-        "irrelevant_refusal_rate": round(refusal_rate,                         4),
+        "citation_accuracy":       round(_safe_mean(citation_accuracy),   4),
+        "hallucination_rate":      round(_safe_mean(hallucination_rate),  4),
+        "quote_presence_rate":     round(_safe_mean(quote_presence),      4),
+        "semantic_drift_rate":     round(_safe_mean(drift_rate),          4),
+        "avg_confidence_score":    round(_safe_mean(confidence_scores),   4),
+        "disclaimer_presence_rate":round(_safe_mean(disclaimer_present),  4),
+        "irrelevant_refusal_rate": round(refusal_rate,                    4),
         "grounding_score":         grounding_score,
         "queries_evaluated":       len(GROUNDING_TEST_QUERIES),
     }
@@ -545,7 +1157,10 @@ def compute_response_quality_metrics() -> dict:
     has_limitations    = []
     provision_counts   = []
 
-    for case in QUALITY_TEST_CASES:
+    total_qc = len(QUALITY_TEST_CASES)
+    for idx, case in enumerate(QUALITY_TEST_CASES, 1):
+        if idx % 5 == 0 or idx == total_qc:
+            print(f"      [{idx}/{total_qc}] Evaluating quality test cases...")
         result = query(user_query=case["query"], role=case["role"])
 
         # Term coverage — check summary + explanation
@@ -588,22 +1203,22 @@ def compute_response_quality_metrics() -> dict:
 
     # Completeness composite
     completeness = round(
-        statistics.mean(has_summary)        * 0.25 +
-        statistics.mean(has_explanation)    * 0.25 +
-        statistics.mean(citation_compliance)* 0.30 +
-        statistics.mean(term_coverage)      * 0.20,
+        _safe_mean(has_summary)         * 0.25 +
+        _safe_mean(has_explanation)     * 0.25 +
+        _safe_mean(citation_compliance) * 0.30 +
+        _safe_mean(term_coverage)       * 0.20,
         4,
     )
 
     metrics = {
-        "term_coverage":             round(statistics.mean(term_coverage),       4),
-        "semantic_relevance":        round(statistics.mean(semantic_relevance),  4),
-        "citation_compliance":       round(statistics.mean(citation_compliance), 4),
-        "summary_presence_rate":     round(statistics.mean(has_summary),         4),
-        "explanation_presence_rate": round(statistics.mean(has_explanation),     4),
-        "action_presence_rate":      round(statistics.mean(has_actions),         4),
-        "limitations_presence_rate": round(statistics.mean(has_limitations),     4),
-        "avg_provisions_per_query":  round(statistics.mean(provision_counts),    2),
+        "term_coverage":             round(_safe_mean(term_coverage),       4),
+        "semantic_relevance":        round(_safe_mean(semantic_relevance),  4),
+        "citation_compliance":       round(_safe_mean(citation_compliance), 4),
+        "summary_presence_rate":     round(_safe_mean(has_summary),         4),
+        "explanation_presence_rate": round(_safe_mean(has_explanation),     4),
+        "action_presence_rate":      round(_safe_mean(has_actions),         4),
+        "limitations_presence_rate": round(_safe_mean(has_limitations),     4),
+        "avg_provisions_per_query":  round(_safe_mean(provision_counts),    2),
         "response_completeness":     completeness,
         "queries_evaluated":         len(QUALITY_TEST_CASES),
     }
@@ -632,6 +1247,23 @@ PERF_QUERIES = [
     "What is bail under BNSS?",
     "What is murder under BNS?",
     "What is coercion in contract law?",
+    # ── Additional performance queries ───────────────────────
+    "What is rape under BNS?",
+    "What is dacoity under BNS?",
+    "What is anticipatory bail?",
+    "What is freedom of speech under Constitution?",
+    "What is fraud in a contract?",
+    "What is the burden of proof under BSA?",
+    "What is criminal conspiracy under BNS?",
+    "What is dowry death?",
+    "What is extortion under BNS?",
+    "What is misrepresentation in contract law?",
+    "What is right to equality under Article 14?",
+    "What is culpable homicide?",
+    "What is electronic evidence under BSA?",
+    "What is the right to constitutional remedies?",
+    "What is breach of contract?",
+    "What is abetment under BNS?",
 ]
 
 
@@ -643,7 +1275,6 @@ def compute_performance_metrics(retriever) -> dict:
     print("\n[4/4] Computing Performance Metrics...")
 
     # Warmup — first query is always slow due to memory paging
-    # Don't include in measurements
     print("  Warming up retriever...")
     retriever.retrieve("test warmup query", top_k=5)
 
@@ -661,15 +1292,21 @@ def compute_performance_metrics(retriever) -> dict:
     e2e_ms = []
     for q in e2e_queries:
         t0 = time.perf_counter()
-        query(q, role="advisor")
-        e2e_ms.append((time.perf_counter() - t0) * 1000)
+        try:
+            query(q, role="advisor")
+            e2e_ms.append((time.perf_counter() - t0) * 1000)
+        except Exception as e:
+            print(f"    E2E query failed: {e}")
 
     # ── Corpus statistics ───────────────────────────────────
-    from config import CHUNKS_PATH, FAISS_INDEX
+    from config import (
+        CHUNKS_PATH, FAISS_INDEX, EMBEDDING_MODEL, EMBEDDING_DIM,
+        RERANK_MODEL, RERANK_CONFIDENCE_THRESHOLD
+    )
     import os
 
     chunk_data   = json.loads(CHUNKS_PATH.read_text(encoding="utf-8"))
-    token_counts = [c["token_count"] for c in chunk_data]
+    token_counts = [c.get("token_count", 0) for c in chunk_data]
 
     by_source = {}
     for c in chunk_data:
@@ -680,47 +1317,63 @@ def compute_performance_metrics(retriever) -> dict:
         for c in chunk_data
     ))
 
-    index_mb = os.path.getsize(str(FAISS_INDEX)) / (1024 * 1024)
+    index_mb = os.path.getsize(str(FAISS_INDEX)) / (1024 * 1024) if FAISS_INDEX.exists() else 0.0
 
-    # Percentiles helper
+    # Percentiles helper (bounds-safe)
     def pct(lst, p):
-        return round(sorted(lst)[int(len(lst) * p / 100)], 2)
+        if not lst:
+            return 0.0
+        idx = min(int(len(lst) * p / 100), len(lst) - 1)
+        return round(sorted(lst)[idx], 2)
 
     metrics = {
         "retrieval_latency_ms": {
-            "mean":   round(statistics.mean(retrieval_ms),   2),
-            "median": round(statistics.median(retrieval_ms), 2),
-            "min":    round(min(retrieval_ms),               2),
-            "max":    round(max(retrieval_ms),               2),
+            "mean":   round(_safe_mean(retrieval_ms),   2),
+            "median": round(statistics.median(retrieval_ms) if retrieval_ms else 0.0, 2),
+            "min":    round(min(retrieval_ms) if retrieval_ms else 0.0, 2),
+            "max":    round(max(retrieval_ms) if retrieval_ms else 0.0, 2),
             "p95":    pct(retrieval_ms, 95),
         },
         "e2e_latency_ms": {
-            "mean":   round(statistics.mean(e2e_ms),   2),
-            "median": round(statistics.median(e2e_ms), 2),
-            "min":    round(min(e2e_ms),               2),
-            "max":    round(max(e2e_ms),               2),
+            "mean":   round(_safe_mean(e2e_ms),   2),
+            "median": round(statistics.median(e2e_ms) if e2e_ms else 0.0, 2),
+            "min":    round(min(e2e_ms) if e2e_ms else 0.0, 2),
+            "max":    round(max(e2e_ms) if e2e_ms else 0.0, 2),
             "note":   "Dominated by external Groq API call",
         },
         "corpus_statistics": {
             "total_chunks":         len(chunk_data),
             "unique_sections":      unique_sections,
             "total_tokens_indexed": sum(token_counts),
-            "avg_tokens_per_chunk": round(statistics.mean(token_counts), 1),
-            "median_tokens":        round(statistics.median(token_counts), 1),
-            "min_tokens":           min(token_counts),
-            "max_tokens":           max(token_counts),
+            "avg_tokens_per_chunk": round(_safe_mean(token_counts), 1),
+            "median_tokens":        round(statistics.median(token_counts) if token_counts else 0.0, 1),
+            "min_tokens":           min(token_counts) if token_counts else 0,
+            "max_tokens":           max(token_counts) if token_counts else 0,
             "chunks_by_source": {
                 src: len(chunks)
                 for src, chunks in sorted(by_source.items())
             },
         },
         "index_size_mb":        round(index_mb, 3),
-        "embedding_dimensions": 384,
-        "embedding_model":      "all-MiniLM-L6-v2",
-        "llm_model":            "openai/gpt-oss-120b (Groq)",
-        "similarity_threshold": 0.42,
+        "embedding_dimensions": EMBEDDING_DIM,
+        "embedding_model":      EMBEDDING_MODEL,
+        "rerank_model":         RERANK_MODEL,
+        "retrieval_architecture": "Hybrid (FAISS dense + BM25Okapi sparse + Cross-Encoder rerank)",
+        "llm_model":            GROQ_MODEL,
+        "confidence_threshold": RERANK_CONFIDENCE_THRESHOLD,
         "cpu_only":             True,
     }
+
+    print(f"  Retrieval latency:   {metrics['retrieval_latency_ms']['mean']:.1f}ms mean  "
+          f"(p95={metrics['retrieval_latency_ms']['p95']}ms)")
+    print(f"  E2E latency:         {metrics['e2e_latency_ms']['mean']:.0f}ms mean  "
+          f"(LLM dominates)")
+    print(f"  Total chunks:        {metrics['corpus_statistics']['total_chunks']}")
+    print(f"  Unique sections:     {metrics['corpus_statistics']['unique_sections']}")
+    print(f"  Total tokens:        {metrics['corpus_statistics']['total_tokens_indexed']:,}")
+    print(f"  Index size:          {metrics['index_size_mb']} MB")
+
+    return metrics
 
     print(f"  Retrieval latency:   {metrics['retrieval_latency_ms']['mean']:.1f}ms mean  "
           f"(p95={metrics['retrieval_latency_ms']['p95']}ms)")
@@ -739,27 +1392,27 @@ def compute_performance_metrics(retriever) -> dict:
 # ══════════════════════════════════════════════════════════════
 
 def compute_aggregate(all_metrics: dict) -> dict:
-    r = all_metrics["retrieval"]
-    g = all_metrics["grounding"]
-    q = all_metrics["quality"]
+    r = all_metrics.get("retrieval", {})
+    g = all_metrics.get("grounding", {})
+    q = all_metrics.get("quality", {})
 
     composite = round(
-        r["mrr"]                      * 0.12 +
-        r["ndcg_at_5"]                * 0.08 +
-        r["negative_rejection_rate"]  * 0.10 +
-        g["grounding_score"]          * 0.35 +
-        q["response_completeness"]    * 0.20 +
-        q["semantic_relevance"]       * 0.15,
+        r.get("mrr", 0.0)                      * 0.12 +
+        r.get("ndcg_at_5", 0.0)                * 0.08 +
+        r.get("negative_rejection_rate", 0.0)  * 0.10 +
+        g.get("grounding_score", 0.0)          * 0.35 +
+        q.get("response_completeness", 0.0)    * 0.20 +
+        q.get("semantic_relevance", 0.0)       * 0.15,
         4,
     )
 
     return {
         "composite_score":    composite,
         "retrieval_subscore": round(
-            r["mrr"] * 0.5 + r["ndcg_at_5"] * 0.5, 4
+            r.get("mrr", 0.0) * 0.5 + r.get("ndcg_at_5", 0.0) * 0.5, 4
         ),
-        "grounding_subscore": g["grounding_score"],
-        "quality_subscore":   q["response_completeness"],
+        "grounding_subscore": g.get("grounding_score", 0.0),
+        "quality_subscore":   q.get("response_completeness", 0.0),
         "grade": (
             "A+" if composite >= 0.90 else
             "A"  if composite >= 0.80 else
@@ -846,7 +1499,9 @@ def print_summary(all_metrics: dict):
         print(f"  {'Unique Sections':<35} {cs['unique_sections']}")
         print(f"  {'Total Tokens Indexed':<35} {cs['total_tokens_indexed']:,}")
         print(f"  {'Avg Tokens / Chunk':<35} {cs['avg_tokens_per_chunk']}")
-        print(f"  {'Embedding Model':<35} {p['embedding_model']}")
+        print(f"  {'Embedding Model':<35} {p.get('embedding_model', 'all-MiniLM-L6-v2')}")
+        if 'rerank_model' in p:
+            print(f"  {'Rerank Model':<35} {p['rerank_model']}")
         print(f"  {'LLM':<35} {p['llm_model']}")
         print(f"  {'CPU Only':<35} {p['cpu_only']}")
         print(f"  Chunks by source:")
@@ -915,7 +1570,7 @@ def main():
     if cat in ("performance", "all"):
         all_metrics["performance"] = compute_performance_metrics(retriever)
 
-    if cat == "all" and len(all_metrics) == 4:
+    if cat == "all" and all(k in all_metrics for k in ("retrieval", "grounding", "quality")):
         all_metrics["aggregate"] = compute_aggregate(all_metrics)
 
     # Print summary
@@ -927,9 +1582,10 @@ def main():
             "timestamp":        datetime.now().isoformat(),
             "system":           "AI Legal Workflow Assistant",
             "corpus":           "Constitution + BNS + BNSS + BSA + Indian Contract Act",
-            "llm":              "openai/gpt-oss-120b via Groq API",
-            "embeddings":       "all-MiniLM-L6-v2 (SentenceTransformers)",
-            "vector_store":     "FAISS IndexFlatIP (CPU)",
+            "llm":              GROQ_MODEL + " via Groq API",
+            "embeddings":       EMBEDDING_MODEL + " (SentenceTransformers)",
+            "reranker":         RERANK_MODEL,
+            "vector_store":     "FAISS IndexFlatIP (CPU) + BM25Okapi",
             "category_run":     cat,
         },
         "metrics": all_metrics,

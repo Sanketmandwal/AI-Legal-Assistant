@@ -28,16 +28,41 @@ def load_chunks() -> list[dict]:
     return json.loads(CHUNKS_PATH.read_text(encoding="utf-8"))
 
 
+def _enrich_text(chunk: dict) -> str:
+    """
+    Build a richer embedding text by prepending structured metadata.
+
+    WHY: Embedding "Section 103 — Murder | Bharatiya Nyaya Sanhita (BNS) | <body>"
+    instead of just the raw body text dramatically improves retrieval for queries
+    that mention section numbers, act names, or legal headings directly.
+
+    Format: "<act_name> | <section_num> — <section_title> | <body_text>"
+    """
+    parts = [chunk.get("act_name", "")]
+    sec = chunk.get("section_num", "")
+    title = chunk.get("section_title", "")
+    if sec and title:
+        parts.append(f"{sec} — {title}")
+    elif sec:
+        parts.append(sec)
+    parts.append(chunk.get("text", ""))
+    return " | ".join(p for p in parts if p)
+
+
 def build_embeddings(chunks: list[dict]) -> np.ndarray:
     """
     Encode all chunk texts into embedding vectors.
     Returns numpy array of shape (N, EMBEDDING_DIM).
+
+    NOTE: We embed enriched text (Act + Section + Title + Body) rather than
+    the raw body alone. This requires a FAISS index rebuild if upgrading from
+    the previous version.
     """
     print(f"  Loading model: {EMBEDDING_MODEL}")
     model = SentenceTransformer(EMBEDDING_MODEL)
 
-    texts = [c["text"] for c in chunks]
-    print(f"  Encoding {len(texts)} chunks in batches...")
+    texts = [_enrich_text(c) for c in chunks]
+    print(f"  Encoding {len(texts)} enriched chunks in batches...")
 
     # batch_size=64 is a good balance for CPU
     # show_progress_bar=True shows a tqdm progress bar

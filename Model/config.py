@@ -56,16 +56,18 @@ SIMILARITY_THRESHOLD = RERANK_CONFIDENCE_THRESHOLD
 QUERY_VARIANTS         = 2      # extra query variants (0 = original only)
 
 # ── Context expansion ────────────────────────────────────────
-CONTEXT_EXPANSION      = False  # if True, also return adjacent sections as context
+CONTEXT_EXPANSION      = True   # if True, also return adjacent sections as context
 CONTEXT_WINDOW         = 1      # ±N sections around each top result
 
 # ── LLM ────────────────────────────────────────────────────
-GROQ_API_KEY  = os.getenv("GROQ_API_KEY", "")
-# GROQ_MODEL = "llama-3.3-70b-versatile"   # fast + capable on Groq
-# GROQ_MODEL = "openai/gpt-oss-120b"
-GROQ_MODEL = "groq/compound-mini"
-MAX_TOKENS    = 1500
-TEMPERATURE   = 0.1   # low temp = more deterministic = fewer hallucinations
+LLM_PROVIDER   = os.getenv("LLM_PROVIDER", "gemini")  # "gemini" or "groq"
+GEMINI_API_KEY = os.getenv("GEMINI_API_KEY", "")
+GEMINI_MODEL   = "gemini-3.5-flash-lite"  # Lightweight, high RPM quota, fast
+GROQ_API_KEY   = os.getenv("GROQ_API_KEY", "")
+GROQ_MODEL     = "openai/gpt-oss-120b"
+ACTIVE_LLM     = GEMINI_MODEL if (LLM_PROVIDER == "gemini" and GEMINI_API_KEY) else GROQ_MODEL
+MAX_TOKENS     = 3500
+TEMPERATURE    = 0.0   # 0.0 = greedy decoding = deterministic = zero hallucination
 
 # ── Source document registry ───────────────────────────────
 # Maps filename → display name used in citations

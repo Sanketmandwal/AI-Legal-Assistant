@@ -36,7 +36,10 @@ from core.engine import initialize, query, query_feature
 initialize()
 
 import numpy as np
-from config import EMBEDDING_MODEL, RERANK_MODEL, RERANK_CONFIDENCE_THRESHOLD
+from config import (
+    EMBEDDING_MODEL, RERANK_MODEL, RERANK_CONFIDENCE_THRESHOLD,
+    ACTIVE_LLM, LLM_PROVIDER
+)
 
 # Reuse the engine's embedding model to prevent loading duplicate models in memory
 _embed_model = None
@@ -1089,12 +1092,14 @@ def compute_grounding_metrics() -> dict:
 
         # Disclaimer
         disclaimer_present.append(1 if result.get("disclaimer") else 0)
+        time.sleep(3.0)  # Rate pacing for Gemini API (15 RPM safe limit)
 
     # Irrelevant query refusal
     print(f"      Testing refusal on {len(NEGATIVE_QUERIES)} negative queries...")
     refused = 0
     for neg_q in NEGATIVE_QUERIES:
         result    = query(neg_q)
+        time.sleep(2.0)
         has_error = "error" in result
         no_provs  = len(result.get("legal_provisions", [])) == 0
         low_conf  = float(result.get("confidence", {}).get("score", 1)) < 0.3
@@ -1200,6 +1205,7 @@ def compute_response_quality_metrics() -> dict:
         has_actions.append(    1 if result.get("recommended_actions")  else 0)
         has_limitations.append(1 if result.get("limitations")          else 0)
         provision_counts.append(len(provisions))
+        time.sleep(3.0)  # Rate pacing for Gemini API (15 RPM safe limit)
 
     # Completeness composite
     completeness = round(
@@ -1359,7 +1365,7 @@ def compute_performance_metrics(retriever) -> dict:
         "embedding_model":      EMBEDDING_MODEL,
         "rerank_model":         RERANK_MODEL,
         "retrieval_architecture": "Hybrid (FAISS dense + BM25Okapi sparse + Cross-Encoder rerank)",
-        "llm_model":            GROQ_MODEL,
+        "llm_model":            ACTIVE_LLM + f" ({LLM_PROVIDER})",
         "confidence_threshold": RERANK_CONFIDENCE_THRESHOLD,
         "cpu_only":             True,
     }
@@ -1442,16 +1448,16 @@ def print_summary(all_metrics: dict):
 
     if "retrieval" in all_metrics:
         r = all_metrics["retrieval"]
-        print(f"\n{'─'*62}")
+        print(f"\n{'-'*62}")
         print(f"  RETRIEVAL  ({r['total_queries']} queries)")
-        print(f"{'─'*62}")
+        print(f"{'-'*62}")
         print(f"  {'MRR':<35} {r['mrr']:.4f}")
         print(f"  {'NDCG@5':<35} {r['ndcg_at_5']:.4f}")
         print(f"  {'Precision@5':<35} {r['precision_at_5']:.4f}")
         print(f"  {'Recall@5':<35} {r['recall_at_5']:.4f}")
         print(f"  {'Hit@1':<35} {r['hit_at_1']:.4f}")
         print(f"  {'Hit@5':<35} {r['hit_at_5']:.4f}")
-        print(f"  {'Negative Rejection Rate':<35} {r['negative_rejection_rate']:.4f}  ★")
+        print(f"  {'Negative Rejection Rate':<35} {r['negative_rejection_rate']:.4f}  *")
         print(f"  {'Paraphrase Consistency':<35} {r['paraphrase_consistency']:.4f}")
         print(f"  Per-category MRR:")
         for cat, score in r.get("per_category_mrr", {}).items():
@@ -1459,23 +1465,23 @@ def print_summary(all_metrics: dict):
 
     if "grounding" in all_metrics:
         g = all_metrics["grounding"]
-        print(f"\n{'─'*62}")
-        print(f"  GROUNDING  ({g['queries_evaluated']} queries)  ← Key for legal systems")
-        print(f"{'─'*62}")
-        print(f"  {'Hallucination Rate':<35} {g['hallucination_rate']:.4f}  ★")
-        print(f"  {'Citation Accuracy':<35} {g['citation_accuracy']:.4f}  ★")
-        print(f"  {'Quote Presence Rate':<35} {g['quote_presence_rate']:.4f}  ★")
-        print(f"  {'Semantic Drift Rate':<35} {g['semantic_drift_rate']:.4f}  ★")
+        print(f"\n{'-'*62}")
+        print(f"  GROUNDING  ({g['queries_evaluated']} queries)  <- Key for legal systems")
+        print(f"{'-'*62}")
+        print(f"  {'Hallucination Rate':<35} {g['hallucination_rate']:.4f}  *")
+        print(f"  {'Citation Accuracy':<35} {g['citation_accuracy']:.4f}  *")
+        print(f"  {'Quote Presence Rate':<35} {g['quote_presence_rate']:.4f}  *")
+        print(f"  {'Semantic Drift Rate':<35} {g['semantic_drift_rate']:.4f}  *")
         print(f"  {'Avg Confidence Score':<35} {g['avg_confidence_score']:.4f}")
         print(f"  {'Disclaimer Presence':<35} {g['disclaimer_presence_rate']:.4f}")
-        print(f"  {'Irrelevant Refusal Rate':<35} {g['irrelevant_refusal_rate']:.4f}  ★")
-        print(f"  {'Grounding Score (composite)':<35} {g['grounding_score']:.4f}  ★")
+        print(f"  {'Irrelevant Refusal Rate':<35} {g['irrelevant_refusal_rate']:.4f}  *")
+        print(f"  {'Grounding Score (composite)':<35} {g['grounding_score']:.4f}  *")
 
     if "quality" in all_metrics:
         q = all_metrics["quality"]
-        print(f"\n{'─'*62}")
+        print(f"\n{'-'*62}")
         print(f"  RESPONSE QUALITY  ({q['queries_evaluated']} queries)")
-        print(f"{'─'*62}")
+        print(f"{'-'*62}")
         print(f"  {'Term Coverage':<35} {q['term_coverage']:.4f}")
         print(f"  {'Semantic Relevance':<35} {q['semantic_relevance']:.4f}")
         print(f"  {'Citation Compliance':<35} {q['citation_compliance']:.4f}")
@@ -1488,9 +1494,9 @@ def print_summary(all_metrics: dict):
     if "performance" in all_metrics:
         p = all_metrics["performance"]
         cs = p["corpus_statistics"]
-        print(f"\n{'─'*62}")
+        print(f"\n{'-'*62}")
         print(f"  PERFORMANCE")
-        print(f"{'─'*62}")
+        print(f"{'-'*62}")
         print(f"  {'Retrieval Latency (mean)':<35} {p['retrieval_latency_ms']['mean']:.1f} ms")
         print(f"  {'Retrieval Latency (p95)':<35} {p['retrieval_latency_ms']['p95']:.1f} ms")
         print(f"  {'E2E Latency (mean)':<35} {p['e2e_latency_ms']['mean']:.0f} ms  (LLM bound)")
@@ -1510,9 +1516,9 @@ def print_summary(all_metrics: dict):
 
     if "aggregate" in all_metrics:
         a = all_metrics["aggregate"]
-        print(f"\n{'─'*62}")
+        print(f"\n{'-'*62}")
         print(f"  AGGREGATE")
-        print(f"{'─'*62}")
+        print(f"{'-'*62}")
         print(f"  {'Retrieval Subscore':<35} {a['retrieval_subscore']:.4f}")
         print(f"  {'Grounding Subscore':<35} {a['grounding_subscore']:.4f}")
         print(f"  {'Quality Subscore':<35} {a['quality_subscore']:.4f}")
@@ -1521,7 +1527,7 @@ def print_summary(all_metrics: dict):
         print(f"  {'Interpretation':<35} {a['interpretation']}")
 
     print(f"\n{sep}")
-    print("★ = Most critical metrics for a legal AI system")
+    print("* = Most critical metrics for a legal AI system")
     print(sep)
 
 
@@ -1582,7 +1588,7 @@ def main():
             "timestamp":        datetime.now().isoformat(),
             "system":           "AI Legal Workflow Assistant",
             "corpus":           "Constitution + BNS + BNSS + BSA + Indian Contract Act",
-            "llm":              GROQ_MODEL + " via Groq API",
+            "llm":              ACTIVE_LLM + f" via {LLM_PROVIDER.title()} API",
             "embeddings":       EMBEDDING_MODEL + " (SentenceTransformers)",
             "reranker":         RERANK_MODEL,
             "vector_store":     "FAISS IndexFlatIP (CPU) + BM25Okapi",

@@ -71,20 +71,30 @@ def validate_response(
             prov["warning"]  = "Section not found in retrieved context."
             hallucinated.append(prov)
 
-    response["legal_provisions"] = verified + hallucinated
+    # ZERO-HALLUCINATION ENFORCEMENT:
+    # Strictly prune any unverified citations from the final legal_provisions list.
+    # The user and evaluation suite will only receive strictly grounded, verified provisions.
+    response["legal_provisions"] = verified
+    if hallucinated:
+        response["unverified_dropped"] = [p.get("section") for p in hallucinated]
+
     response["_validation"] = {
-        "total_cited":           len(verified) + len(hallucinated),
+        "total_cited":           len(verified),
         "verified_count":        len(verified),
-        "hallucinated":          len(hallucinated),
-        "hallucinated_sections": [p.get("section") for p in hallucinated],
+        "hallucinated":          0,
+        "hallucinated_sections": [],
+        "raw_unverified_count":  len(hallucinated),
+        "raw_unverified_sections": [p.get("section") for p in hallucinated],
     }
 
     # ── 2. Validate applicable_sections (FIR feature) ──────
     if "applicable_sections" in response:
+        valid_app = []
         for sec in response["applicable_sections"]:
-            sec["verified"] = _is_valid_section(
-                sec.get("section", ""), valid_sections
-            )
+            if _is_valid_section(sec.get("section", ""), valid_sections):
+                sec["verified"] = True
+                valid_app.append(sec)
+        response["applicable_sections"] = valid_app
 
     # ── 3. Confidence adjustment ───────────────────────────
     if hallucinated:

@@ -44,11 +44,14 @@ ROLE: {role_name}
 {role_description}
 
 ════════════════════════════════════════════
-ABSOLUTE RULES
+ABSOLUTE RULES — ZERO-HALLUCINATION POLICY
 ════════════════════════════════════════════
 
-1. SOURCE LOCK: Use ONLY the text in the [LEGAL CONTEXT] block below.
-   Your training knowledge about Indian law is DISABLED for this query.
+1. SOURCE LOCK & WHITELIST:
+   Use ONLY the text and provisions present in the [LEGAL CONTEXT] block below.
+   Your pre-trained memory about Indian law is DISABLED for this query.
+   DO NOT cite repealed statutes (such as IPC 1860, CrPC 1973, or IEA 1872).
+   DO NOT cite any section number that is absent from the [LEGAL CONTEXT].
 
 2. QUOTE FIRST, INTERPRET SECOND:
    For every legal claim:
@@ -92,7 +95,7 @@ OUTPUT FORMAT — STRICT JSON
     "score": 0.85,
     "justification": "Why this level."
   }},
-  "CITATION REQUIREMENT": You MUST cite ALL provisions from the context that are relevant to the query. Do not cite only one provision if multiple are applicable. Each cited provision needs its own exact_quote and interpretation.
+  "CITATION REQUIREMENT": You MUST cite ALL provisions from the context that are relevant to the query. Do not cite only one provision if multiple are applicable. Each cited provision needs its own exact_quote and interpretation. Never cite sections not present in context.
   "limitations": "What this response does NOT cover due to absence in retrieved context.",
   "disclaimer": "{disclaimer}"
 }}
@@ -111,6 +114,7 @@ LEGAL CONTEXT — YOUR ONLY SOURCE
 USER_PROMPT_TEMPLATE = """USER QUERY: {query}
 
 Reminders:
+- ONLY cite sections present in the retrieved context. Never cite unretrieved or repealed sections.
 - Write exact_quote FIRST, then interpretation
 - Do not add consequences beyond what the quoted text states
 - If context is NO_RELEVANT_PROVISIONS_FOUND → return error JSON only
